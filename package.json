@@ -1,0 +1,31 @@
+{
+  "name": "passwordmanager",
+  "version": "1.0.0",
+  "description": "Manage your passwords in a secure way",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StringManolo/passwordManager.git"
+  },
+  "keywords": [
+    "password",
+    "manager",
+    "cryptographic",
+    "secure"
+  ],
+  "author": "StringManolo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/StringManolo/passwordManager/issues"
+  },
+  "homepage": "https://github.com/StringManolo/passwordManager#readme",
+  "dependencies": {
+    "typescript": "^4.4.4"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.6"
+  }
+}
