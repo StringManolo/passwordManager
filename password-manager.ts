@@ -26,61 +26,53 @@ import * as exec from "child_process";
 
 
 /* TYPESCRIPT INTERFACES */
-interface DATABASE_USERS_SERVICES_IDS {
-  [index: number]: {
-    id: string,
-    eu: string, // email/username
-    password: string,
-    description: string
-  }
+interface DatabaseUsersServicesIds {
+  id: string,
+  eu: string, // email/username
+  password: string,
+  description: string
 }
 
-interface DATABASE_USERS_SERVICES {
-  [index: number]: {
-    name: string,
-    ids: DATABASE_USERS_SERVICES_IDS[]
-  }
+interface DatabaseUsersServices {
+  name: string,
+  ids: DatabaseUsersServicesIds[]
 }
 
-interface DATABASE_USERS {
-  [index: number]: {
-    username: string,
-    key?: string,
-    services: DATABASE_USERS_SERVICES[]
-  }
+interface DatabaseUsers {
+  username: string,
+  key?: string,
+  services: DatabaseUsersServices[]
 }
 
-interface DATABASE_CONFIG {
+interface DatabaseConfig {
   useMasterKey: boolean,
   usePerUserKey: boolean
 }
 
-interface DATABASE {
-  users?: DATABASE_USERS[],
+interface Database {
+  users?: DatabaseUsers[],
 
   masterKey?: string,
   masterTestKey?: string,
   expectedTest?: string,
 
-  config?: DATABASE_CONFIG
+  config?: DatabaseConfig
 }
 
-interface INPUTUSERDATA {
+
+interface InputUserData {
   username: string,
   key?: string
 }
 
-
-
-interface CLI {
+interface Cli {
   getUsers?: true | false,
   createUser?: string,
   deleteUser?: string,
-  userData?: INPUTUSERDATA
+  userData?: InputUserData
 }
 
-
-interface FILEDESCRIPTOR {
+interface FileDescriptor {
   internalFd: number,
   read(buffer: Buffer, position: number, len: number): number,
   puts(str: string): number,
@@ -115,7 +107,7 @@ const loadFile = (filename: string): string | null => {
 
 
 const open = (filename: string, mode: string) => {
-  const fd: FILEDESCRIPTOR = {} as any;
+  const fd: FileDescriptor = {} as any;
   fd.internalFd = fs.openSync(filename, mode);
   fd.read = (buffer, position, len) => fs.readSync(fd.internalFd, buffer, position, len, null);
   fd.puts = (str) => fs.writeSync(fd.internalFd, str);
@@ -144,7 +136,7 @@ const createFileOverwrite = (filename: string, data: string) => {
 /* PROGRAM FUNCTIONS */
 const createDatabase = (dbPath: string) => {
   if (!fs.existsSync(dbPath)) {
-    const db: DATABASE = {
+    const db: Database = {
       users: [],
       masterKey: "",
       masterTestKey: "jdjdusjdjddj",
@@ -159,7 +151,7 @@ const createDatabase = (dbPath: string) => {
 }
 
 
-const updateDatabase = (dbPath: string, db: DATABASE) => {
+const updateDatabase = (dbPath: string, db: Database) => {
   if (fs.existsSync(dbPath)) {
     createFileOverwrite(dbPath, JSON.stringify(db, null, 2)); 
   } else {
@@ -169,9 +161,9 @@ const updateDatabase = (dbPath: string, db: DATABASE) => {
 }
 
 // get the program data as json from filesystem
-const getData = (jsonPath: string): null | DATABASE => {
+const getData = (jsonPath: string): null | Database => {
   const data: string | null = loadFile(jsonPath);
-  let jsonData: DATABASE = {} as any;
+  let jsonData: Database = {} as any;
   if (data) {
     try {
       jsonData = JSON.parse(data);
@@ -209,13 +201,14 @@ const showUsers = (jsonPath: string) => {
 
   console.log("USERS:");
   for (let i = 0; i < users.length; ++i) {
-    console.log(`  ${i + 1} - ${(<any>users[i]).username}`); // https://stackoverflow.com/questions/69791780/property-username-does-not-exist-on-type-database-users
+    console.log(`  ${i + 1} - ${users[i].username}`);
+    //console.log(`  ${i + 1} - ${(<any>users[i]).username}`); // https://stackoverflow.com/questions/69791780/property-username-does-not-exist-on-type-database-users
   }
   console.log("\n");
 }
 
 
-const createUser = (jsonPath: string, userData: INPUTUSERDATA) => {
+const createUser = (jsonPath: string, userData: InputUserData) => {
   const data = getData(jsonPath);
   if (data && userData?.username) {
     const user = {} as any;
@@ -228,7 +221,7 @@ const createUser = (jsonPath: string, userData: INPUTUSERDATA) => {
     // check if user already exists
     if (data?.users) {
       for (let i = 0; i < data?.users?.length; ++i) {
-        if ( (<any>data.users[i]).username === user.username) {
+        if (data.users[i].username === user.username) {
           return undefined; 
 	}
       }
@@ -245,7 +238,7 @@ const deleteUser = (jsonPath: string, username: string) => {
   if (data && username) {
     if (data?.users) {
       for (let i = 0; i < data?.users?.length; ++i) {
-        if ( (<any>data.users[i]).username === username) {
+        if (data.users[i].username === username) {
           data.users.splice(i, 1); // remove current object
 	  updateDatabase(jsonPath, data);
 	  return undefined;
@@ -284,8 +277,8 @@ const db = {
 */
 
 
-const parseArguments = (): CLI => {
-  const cli: CLI = {} as any;
+const parseArguments = (): Cli => {
+  const cli: Cli = {} as any;
   for (let i = 0; i < process.argv.length; ++i) {
     const current = process.argv[i];
     const next = process.argv[+i + 1];
@@ -406,31 +399,3 @@ if (cli.getUsers) {
 
 
 
-
-/* Json preview:
-const db = {
-  users: [{ 
-    username: "stringmanolo",
-    key: "qwe",
-    services: [{
-      name: "gmail",
-      ids: [{
-	id: "main account",
-	eu: "mvc@gmail.com",
-	password: "12345678",
-	description: "This is the password for my personal gmail account"
-      }]
-    }]
-  }],
-  masterKey: "qwerty",
-  masterTestKey: "uwjwhsusjwjs",
-  expectedTest: "hello",
-  
-  config: {
-    useMasterKey: true,
-    userPerUserKey: false
-  }
-}
-*/
-
-// console.log(JSON.stringify(db));

@@ -136,7 +136,8 @@ var showUsers = function (jsonPath) {
     }
     console.log("USERS:");
     for (var i = 0; i < users.length; ++i) {
-        console.log("  " + (i + 1) + " - " + users[i].username); // https://stackoverflow.com/questions/69791780/property-username-does-not-exist-on-type-database-users
+        console.log("  " + (i + 1) + " - " + users[i].username);
+        //console.log(`  ${i + 1} - ${(<any>users[i]).username}`); // https://stackoverflow.com/questions/69791780/property-username-does-not-exist-on-type-database-users
     }
     console.log("\n");
 };
@@ -301,29 +302,3 @@ else if (cli.deleteUser && ((_a = cli === null || cli === void 0 ? void 0 : cli.
 else {
     //showUsage();
 }
-/* Json preview:
-const db = {
-  users: [{
-    username: "stringmanolo",
-    key: "qwe",
-    services: [{
-      name: "gmail",
-      ids: [{
-    id: "main account",
-    eu: "mvc@gmail.com",
-    password: "12345678",
-    description: "This is the password for my personal gmail account"
-      }]
-    }]
-  }],
-  masterKey: "qwerty",
-  masterTestKey: "uwjwhsusjwjs",
-  expectedTest: "hello",
-  
-  config: {
-    useMasterKey: true,
-    userPerUserKey: false
-  }
-}
-*/
-// console.log(JSON.stringify(db));

@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "username": "Jhon",
+      "services": []
+    },
+    {
+      "username": "Kevin",
+      "key": "abc",
+      "services": []
+    }
+  ]
+}
