@@ -19,6 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Show Services || Create Services || Delete Services
 // Show ID || Create ID || Delete ID
@@ -153,13 +154,28 @@ var createUser = function (jsonPath, userData) {
         if (data === null || data === void 0 ? void 0 : data.users) {
             for (var i = 0; i < ((_a = data === null || data === void 0 ? void 0 : data.users) === null || _a === void 0 ? void 0 : _a.length); ++i) {
                 if (data.users[i].username === user.username) {
-                    console.log("Found User " + data.users[i].username);
                     return undefined;
                 }
             }
         }
         (_b = data === null || data === void 0 ? void 0 : data.users) === null || _b === void 0 ? void 0 : _b.push(user);
         updateDatabase(jsonPath, data);
+    }
+    return undefined;
+};
+var deleteUser = function (jsonPath, username) {
+    var _a;
+    var data = getData(jsonPath);
+    if (data && username) {
+        if (data === null || data === void 0 ? void 0 : data.users) {
+            for (var i = 0; i < ((_a = data === null || data === void 0 ? void 0 : data.users) === null || _a === void 0 ? void 0 : _a.length); ++i) {
+                if (data.users[i].username === username) {
+                    data.users.splice(i, 1); // remove current object
+                    updateDatabase(jsonPath, data);
+                    return undefined;
+                }
+            }
+        }
     }
     return undefined;
 };
@@ -200,6 +216,7 @@ var parseArguments = function () {
             case "get_users":
             case "get":
             case "Get":
+            case "g":
             case "u":
             case "-u":
             case "--users":
@@ -217,6 +234,19 @@ var parseArguments = function () {
             case "--create":
             case "--create-user":
                 cli.createUser = next;
+                cli.userData = {};
+                break;
+            case "deleteUser":
+            case "deleteuser":
+            case "delete-user":
+            case "delete_user":
+            case "delete":
+            case "Delete":
+            case "d":
+            case "-d":
+            case "--delete":
+            case "--delete-user":
+                cli.deleteUser = next;
                 cli.userData = {};
                 break;
             case "username":
@@ -264,6 +294,9 @@ if (cli.getUsers) {
 }
 else if (cli.createUser && cli.userData) {
     createUser(JSON_PATH, cli.userData);
+}
+else if (cli.deleteUser && ((_a = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _a === void 0 ? void 0 : _a.username)) {
+    deleteUser(JSON_PATH, cli.userData.username);
 }
 else {
     //showUsage();

@@ -75,6 +75,7 @@ interface INPUTUSERDATA {
 interface CLI {
   getUsers?: true | false,
   createUser?: string,
+  deleteUser?: string,
   userData?: INPUTUSERDATA
 }
 
@@ -228,7 +229,6 @@ const createUser = (jsonPath: string, userData: INPUTUSERDATA) => {
     if (data?.users) {
       for (let i = 0; i < data?.users?.length; ++i) {
         if ( (<any>data.users[i]).username === user.username) {
-	  console.log(`Found User ${ (<any>data.users[i]).username}`);
           return undefined; 
 	}
       }
@@ -238,6 +238,24 @@ const createUser = (jsonPath: string, userData: INPUTUSERDATA) => {
   }
   return undefined;
 }
+
+
+const deleteUser = (jsonPath: string, username: string) => {
+  const data = getData(jsonPath);
+  if (data && username) {
+    if (data?.users) {
+      for (let i = 0; i < data?.users?.length; ++i) {
+        if ( (<any>data.users[i]).username === username) {
+          data.users.splice(i, 1); // remove current object
+	  updateDatabase(jsonPath, data);
+	  return undefined;
+	}
+      }
+    }
+  }
+  return undefined;
+}
+
 
 /*
 const db = {
@@ -278,6 +296,7 @@ const parseArguments = (): CLI => {
       case "get_users":
       case "get":
       case "Get":
+      case "g":
       case "u":
       case "-u":
       case "--users":
@@ -296,6 +315,20 @@ const parseArguments = (): CLI => {
       case "--create":
       case "--create-user":
         cli.createUser = next;
+        cli.userData = {} as any;
+      break;
+
+      case "deleteUser":
+      case "deleteuser":
+      case "delete-user":
+      case "delete_user":
+      case "delete":
+      case "Delete":
+      case "d":
+      case "-d":
+      case "--delete":
+      case "--delete-user":
+        cli.deleteUser = next;
         cli.userData = {} as any;
       break;
 
@@ -365,6 +398,8 @@ if (cli.getUsers) {
   showUsers(JSON_PATH);
 } else if (cli.createUser && cli.userData) {
   createUser(JSON_PATH, cli.userData);
+} else if (cli.deleteUser && cli?.userData?.username) {
+  deleteUser(JSON_PATH, cli.userData.username);
 } else {
   //showUsage();
 }
