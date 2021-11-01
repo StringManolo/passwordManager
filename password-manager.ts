@@ -216,7 +216,7 @@ const showUsers = (jsonPath: string) => {
 
 const createUser = (jsonPath: string, userData: INPUTUSERDATA) => {
   const data = getData(jsonPath);
-  if (data) {
+  if (data && userData?.username) {
     const user = {} as any;
     user.username = userData.username;
     if (userData.key) {
@@ -224,9 +224,19 @@ const createUser = (jsonPath: string, userData: INPUTUSERDATA) => {
     }
     user.services = [];
 
+    // check if user already exists
+    if (data?.users) {
+      for (let i = 0; i < data?.users?.length; ++i) {
+        if ( (<any>data.users[i]).username === user.username) {
+	  console.log(`Found User ${ (<any>data.users[i]).username}`);
+          return undefined; 
+	}
+      }
+    }
     data?.users?.push(user);
     updateDatabase(jsonPath, data);
   }
+  return undefined;
 }
 
 /*
@@ -348,6 +358,8 @@ const JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
 createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
 createDatabase(JSON_PATH); // create json file (database)
 const cli = parseArguments(); // parse arguments from cli
+
+// TODO: ask for masterkey before decrypting
 
 if (cli.getUsers) {
   showUsers(JSON_PATH);

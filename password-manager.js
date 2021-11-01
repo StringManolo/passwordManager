@@ -140,18 +140,28 @@ var showUsers = function (jsonPath) {
     console.log("\n");
 };
 var createUser = function (jsonPath, userData) {
-    var _a;
+    var _a, _b;
     var data = getData(jsonPath);
-    if (data) {
+    if (data && (userData === null || userData === void 0 ? void 0 : userData.username)) {
         var user = {};
         user.username = userData.username;
         if (userData.key) {
             user.key = userData.key;
         }
         user.services = [];
-        (_a = data === null || data === void 0 ? void 0 : data.users) === null || _a === void 0 ? void 0 : _a.push(user);
+        // check if user already exists
+        if (data === null || data === void 0 ? void 0 : data.users) {
+            for (var i = 0; i < ((_a = data === null || data === void 0 ? void 0 : data.users) === null || _a === void 0 ? void 0 : _a.length); ++i) {
+                if (data.users[i].username === user.username) {
+                    console.log("Found User " + data.users[i].username);
+                    return undefined;
+                }
+            }
+        }
+        (_b = data === null || data === void 0 ? void 0 : data.users) === null || _b === void 0 ? void 0 : _b.push(user);
         updateDatabase(jsonPath, data);
     }
+    return undefined;
 };
 /*
 const db = {
@@ -248,6 +258,7 @@ var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
 createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
 createDatabase(JSON_PATH); // create json file (database)
 var cli = parseArguments(); // parse arguments from cli
+// TODO: ask for masterkey before decrypting
 if (cli.getUsers) {
     showUsers(JSON_PATH);
 }
