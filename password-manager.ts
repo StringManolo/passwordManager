@@ -62,13 +62,15 @@ interface Database {
 
 interface InputUserData {
   username: string,
-  key?: string
+  key?: string,
+  serviceName: string
 }
 
 interface Cli {
   getUsers?: true | false,
   createUser?: string,
   deleteUser?: string,
+  createService?: string,
   userData?: InputUserData
 }
 
@@ -250,6 +252,37 @@ const deleteUser = (jsonPath: string, username: string) => {
 }
 
 
+const createService = (jsonPath: string, userData: InputUserData) => {
+  const data = getData(jsonPath);
+  if (data && userData?.username && userData?.serviceName) {
+    let user;
+    let userIndex = 0;
+    if (data?.users) {
+      for (let i = 0; i < data?.users?.length; ++i) {
+        if (data.users[i].username === userData?.username) {
+          user = data.users[i];
+	  userIndex = i;
+	  break;
+	}
+      }
+      if (!user?.username) {
+        console.log(`Username "${userData?.username}" not found.`);
+	return undefined;
+      }
+      
+      if (!user?.services) {
+        user.services = [];
+      }
+      // TODO: check if service already exists
+      user.services.push({ name: userData.serviceName, ids: [] });
+      data.users[userIndex] = user;
+      updateDatabase(jsonPath, data);
+      console.log("Database updated");
+    }
+  } 
+  return undefined;
+}
+
 /*
 const db = {
   users: [{
@@ -325,11 +358,27 @@ const parseArguments = (): Cli => {
         cli.userData = {} as any;
       break;
 
+      case "createService":
+      case "createservice":
+      case "create-service":
+      case "create_service":
+      case "--create-service":
+        cli.createService = next;
+        cli.userData = {} as any;
+      break;
+
       case "username":
       case "--username":
         if (cli?.userData) {
           cli.userData.username = next;
 	}
+      break;
+
+      case "serviceName":
+      case "--serviceName":
+        if (cli?.userData) {
+          cli.userData.serviceName = next;
+        }
       break;
 
       case "key":
@@ -393,6 +442,9 @@ if (cli.getUsers) {
   createUser(JSON_PATH, cli.userData);
 } else if (cli.deleteUser && cli?.userData?.username) {
   deleteUser(JSON_PATH, cli.userData.username);
+} else if (cli?.createService && cli?.userData) {
+  console.log("Creating Service");
+  createService(JSON_PATH, cli.userData);
 } else {
   //showUsage();
 }

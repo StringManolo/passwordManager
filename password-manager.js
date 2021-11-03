@@ -180,6 +180,36 @@ var deleteUser = function (jsonPath, username) {
     }
     return undefined;
 };
+var createService = function (jsonPath, userData) {
+    var _a;
+    var data = getData(jsonPath);
+    if (data && (userData === null || userData === void 0 ? void 0 : userData.username) && (userData === null || userData === void 0 ? void 0 : userData.serviceName)) {
+        var user = void 0;
+        var userIndex = 0;
+        if (data === null || data === void 0 ? void 0 : data.users) {
+            for (var i = 0; i < ((_a = data === null || data === void 0 ? void 0 : data.users) === null || _a === void 0 ? void 0 : _a.length); ++i) {
+                if (data.users[i].username === (userData === null || userData === void 0 ? void 0 : userData.username)) {
+                    user = data.users[i];
+                    userIndex = i;
+                    break;
+                }
+            }
+            if (!(user === null || user === void 0 ? void 0 : user.username)) {
+                console.log("Username \"" + (userData === null || userData === void 0 ? void 0 : userData.username) + "\" not found.");
+                return undefined;
+            }
+            if (!(user === null || user === void 0 ? void 0 : user.services)) {
+                user.services = [];
+            }
+            // TODO: check if service already exists
+            user.services.push({ name: userData.serviceName, ids: [] });
+            data.users[userIndex] = user;
+            updateDatabase(jsonPath, data);
+            console.log("Database updated");
+        }
+    }
+    return undefined;
+};
 /*
 const db = {
   users: [{
@@ -250,10 +280,24 @@ var parseArguments = function () {
                 cli.deleteUser = next;
                 cli.userData = {};
                 break;
+            case "createService":
+            case "createservice":
+            case "create-service":
+            case "create_service":
+            case "--create-service":
+                cli.createService = next;
+                cli.userData = {};
+                break;
             case "username":
             case "--username":
                 if (cli === null || cli === void 0 ? void 0 : cli.userData) {
                     cli.userData.username = next;
+                }
+                break;
+            case "serviceName":
+            case "--serviceName":
+                if (cli === null || cli === void 0 ? void 0 : cli.userData) {
+                    cli.userData.serviceName = next;
                 }
                 break;
             case "key":
@@ -298,6 +342,10 @@ else if (cli.createUser && cli.userData) {
 }
 else if (cli.deleteUser && ((_a = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _a === void 0 ? void 0 : _a.username)) {
     deleteUser(JSON_PATH, cli.userData.username);
+}
+else if ((cli === null || cli === void 0 ? void 0 : cli.createService) && (cli === null || cli === void 0 ? void 0 : cli.userData)) {
+    console.log("Creating Service");
+    createService(JSON_PATH, cli.userData);
 }
 else {
     //showUsage();
