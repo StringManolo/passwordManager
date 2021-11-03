@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var _a;
+var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Show Services || Create Services || Delete Services
 // Show ID || Create ID || Delete ID
@@ -132,14 +132,14 @@ var showUsers = function (jsonPath) {
     var users = getUsers(jsonPath);
     if (!users) {
         console.log("Not users to show");
-        process.exit();
+        return undefined;
     }
     console.log("USERS:");
     for (var i = 0; i < users.length; ++i) {
         console.log("  " + (i + 1) + " - " + users[i].username);
-        //console.log(`  ${i + 1} - ${(<any>users[i]).username}`); // https://stackoverflow.com/questions/69791780/property-username-does-not-exist-on-type-database-users
     }
     console.log("\n");
+    return undefined;
 };
 var createUser = function (jsonPath, userData) {
     var _a, _b;
@@ -178,6 +178,28 @@ var deleteUser = function (jsonPath, username) {
             }
         }
     }
+    return undefined;
+};
+var showServices = function (jsonPath, username) {
+    var _a, _b;
+    var users = getUsers(jsonPath);
+    if (!users) {
+        console.log("Not users to show");
+        return undefined;
+    }
+    for (var i = 0; i < users.length; ++i) {
+        if (((_a = users[i]) === null || _a === void 0 ? void 0 : _a.username) === username) {
+            // show services for this username
+            if ((_b = users[i].services) === null || _b === void 0 ? void 0 : _b.length) {
+                console.log("SERVICES:");
+                for (var j in users[i].services) {
+                    console.log("  " + (j + 1) + " - " + users[i].services[j].name);
+                }
+            }
+            return undefined;
+        }
+    }
+    console.log("User \"" + username + "\" not found");
     return undefined;
 };
 var createService = function (jsonPath, userData) {
@@ -280,6 +302,17 @@ var parseArguments = function () {
                 cli.deleteUser = next;
                 cli.userData = {};
                 break;
+            case "getServices":
+            case "getservices":
+            case "get-services":
+            case "get_services":
+            case "s":
+            case "-s":
+            case "--services":
+            case "--get-services":
+                cli.getServices = true;
+                cli.userData = {};
+                break;
             case "createService":
             case "createservice":
             case "create-service":
@@ -342,6 +375,10 @@ else if (cli.createUser && cli.userData) {
 }
 else if (cli.deleteUser && ((_a = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _a === void 0 ? void 0 : _a.username)) {
     deleteUser(JSON_PATH, cli.userData.username);
+}
+else if (cli.getServices && ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.username)) {
+    console.log("Showing Services");
+    showServices(JSON_PATH, cli.userData.username);
 }
 else if ((cli === null || cli === void 0 ? void 0 : cli.createService) && (cli === null || cli === void 0 ? void 0 : cli.userData)) {
     console.log("Creating Service");

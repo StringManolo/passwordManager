@@ -70,6 +70,7 @@ interface Cli {
   getUsers?: true | false,
   createUser?: string,
   deleteUser?: string,
+  getServices?: true | false,
   createService?: string,
   userData?: InputUserData
 }
@@ -198,15 +199,15 @@ const showUsers = (jsonPath: string) => {
   const users = getUsers(jsonPath);
   if (!users) {
     console.log("Not users to show");
-    process.exit();
+    return undefined;
   }
 
   console.log("USERS:");
   for (let i = 0; i < users.length; ++i) {
     console.log(`  ${i + 1} - ${users[i].username}`);
-    //console.log(`  ${i + 1} - ${(<any>users[i]).username}`); // https://stackoverflow.com/questions/69791780/property-username-does-not-exist-on-type-database-users
   }
   console.log("\n");
+  return undefined;
 }
 
 
@@ -251,6 +252,28 @@ const deleteUser = (jsonPath: string, username: string) => {
   return undefined;
 }
 
+const showServices = (jsonPath: string, username: string) => {
+  const users = getUsers(jsonPath);
+  if (!users) {
+    console.log("Not users to show");
+    return undefined;
+  }
+
+  for (let i = 0; i < users.length; ++i) {
+    if (users[i]?.username === username) {
+      // show services for this username
+      if (users[i].services?.length) {
+        console.log("SERVICES:");
+        for (let j in users[i].services) {
+          console.log(`  ${j + 1} - ${users[i].services[j].name}`);
+	}
+      }
+      return undefined;
+    }
+  }
+  console.log(`User "${username}" not found`);
+  return undefined;
+}
 
 const createService = (jsonPath: string, userData: InputUserData) => {
   const data = getData(jsonPath);
@@ -358,6 +381,18 @@ const parseArguments = (): Cli => {
         cli.userData = {} as any;
       break;
 
+      case "getServices":
+      case "getservices":
+      case "get-services":
+      case "get_services":
+      case "s":
+      case "-s":
+      case "--services":
+      case "--get-services":
+        cli.getServices = true;
+        cli.userData = {} as any;
+      break;
+
       case "createService":
       case "createservice":
       case "create-service":
@@ -442,8 +477,9 @@ if (cli.getUsers) {
   createUser(JSON_PATH, cli.userData);
 } else if (cli.deleteUser && cli?.userData?.username) {
   deleteUser(JSON_PATH, cli.userData.username);
+} else if (cli.getServices && cli?.userData?.username) {
+  showServices(JSON_PATH, cli.userData.username);
 } else if (cli?.createService && cli?.userData) {
-  console.log("Creating Service");
   createService(JSON_PATH, cli.userData);
 } else {
   //showUsage();
