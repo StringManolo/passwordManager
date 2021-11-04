@@ -17,8 +17,6 @@
 
 
 
-
-
 /* PROGRAM MODULES */
 import * as fs from "fs";
 import * as exec from "child_process";
@@ -72,6 +70,7 @@ interface Cli {
   deleteUser?: string,
   getServices?: true | false,
   createService?: string,
+  deleteService?: string,
   userData?: InputUserData
 }
 
@@ -300,11 +299,31 @@ const createService = (jsonPath: string, userData: InputUserData) => {
       user.services.push({ name: userData.serviceName, ids: [] });
       data.users[userIndex] = user;
       updateDatabase(jsonPath, data);
-      console.log("Database updated");
     }
   } 
   return undefined;
 }
+
+const deleteService = (jsonPath: string, userData: InputUserData) => {
+  const data = getData(jsonPath);
+  if (data && userData?.username && userData?.serviceName) {
+    if (data?.users) {
+      for (let i = 0; i < data?.users?.length; ++i) {
+        if (data.users[i].username === userData.username) {
+          for (let j = 0; j < data.users[i]?.services.length; ++j) {
+            if (data.users[i].services[j].name === userData?.serviceName) {
+	      data.users[i].services.splice(j, 1); // remove current object (service)
+	      updateDatabase(jsonPath, data);
+	      return undefined;
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return undefined;
+}
+
 
 /*
 const db = {
@@ -402,6 +421,15 @@ const parseArguments = (): Cli => {
         cli.userData = {} as any;
       break;
 
+      case "deleteService":
+      case "deleteservice":
+      case "delete-service":
+      case "delete_service":
+      case "--delete-service":
+        cli.deleteService = next;
+        cli.userData = {} as any;
+      break;
+
       case "username":
       case "--username":
         if (cli?.userData) {
@@ -411,6 +439,8 @@ const parseArguments = (): Cli => {
 
       case "serviceName":
       case "--serviceName":
+      case "--service-name":
+      case "--service_name":
         if (cli?.userData) {
           cli.userData.serviceName = next;
         }
@@ -431,12 +461,28 @@ const parseArguments = (): Cli => {
       case "--help":
         console.log(`Help Menú:
 
+  USER
 getUsers          Show all the users
 createUser        Create new users
+deleteUser        Delete a user
+
+  SERVICE
+getServices        Show all the services for a user
+createService      Create a new service for a user
+deleteService     Delete a service from a user
+
 ...
 ...
 ...
-...
+
+
+Examples of usage:
+
+pm getUsers 
+pm createUser --username StringManolo
+pm createService --username StringManolo --service-name Gmail
+pm getServices --username StringManolo
+pm deleteService --username Stringmanolo --service-name Gmail
 `);
         process.exit(); 
     }
@@ -471,7 +517,7 @@ const cli = parseArguments(); // parse arguments from cli
 
 // TODO: ask for masterkey before decrypting
 
-if (cli.getUsers) {
+if (cli.getUsers) { 
   showUsers(JSON_PATH);
 } else if (cli.createUser && cli.userData) {
   createUser(JSON_PATH, cli.userData);
@@ -481,6 +527,8 @@ if (cli.getUsers) {
   showServices(JSON_PATH, cli.userData.username);
 } else if (cli?.createService && cli?.userData) {
   createService(JSON_PATH, cli.userData);
+} else if (cli?.deleteService && cli?.userData?.username && cli?.userData?.serviceName) {
+  deleteService(JSON_PATH, cli.userData);
 } else {
   //showUsage();
 }

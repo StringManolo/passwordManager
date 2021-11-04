@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var _a, _b;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Show Services || Create Services || Delete Services
 // Show ID || Create ID || Delete ID
@@ -227,7 +227,26 @@ var createService = function (jsonPath, userData) {
             user.services.push({ name: userData.serviceName, ids: [] });
             data.users[userIndex] = user;
             updateDatabase(jsonPath, data);
-            console.log("Database updated");
+        }
+    }
+    return undefined;
+};
+var deleteService = function (jsonPath, userData) {
+    var _a, _b;
+    var data = getData(jsonPath);
+    if (data && (userData === null || userData === void 0 ? void 0 : userData.username) && (userData === null || userData === void 0 ? void 0 : userData.serviceName)) {
+        if (data === null || data === void 0 ? void 0 : data.users) {
+            for (var i = 0; i < ((_a = data === null || data === void 0 ? void 0 : data.users) === null || _a === void 0 ? void 0 : _a.length); ++i) {
+                if (data.users[i].username === userData.username) {
+                    for (var j = 0; j < ((_b = data.users[i]) === null || _b === void 0 ? void 0 : _b.services.length); ++j) {
+                        if (data.users[i].services[j].name === (userData === null || userData === void 0 ? void 0 : userData.serviceName)) {
+                            data.users[i].services.splice(j, 1); // remove current object (service)
+                            updateDatabase(jsonPath, data);
+                            return undefined;
+                        }
+                    }
+                }
+            }
         }
     }
     return undefined;
@@ -321,6 +340,14 @@ var parseArguments = function () {
                 cli.createService = next;
                 cli.userData = {};
                 break;
+            case "deleteService":
+            case "deleteservice":
+            case "delete-service":
+            case "delete_service":
+            case "--delete-service":
+                cli.deleteService = next;
+                cli.userData = {};
+                break;
             case "username":
             case "--username":
                 if (cli === null || cli === void 0 ? void 0 : cli.userData) {
@@ -329,6 +356,8 @@ var parseArguments = function () {
                 break;
             case "serviceName":
             case "--serviceName":
+            case "--service-name":
+            case "--service_name":
                 if (cli === null || cli === void 0 ? void 0 : cli.userData) {
                     cli.userData.serviceName = next;
                 }
@@ -345,7 +374,7 @@ var parseArguments = function () {
             case "Help":
             case "-h":
             case "--help":
-                console.log("Help Men\u00FA:\n\ngetUsers          Show all the users\ncreateUser        Create new users\n...\n...\n...\n...\n");
+                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices        Show all the services for a user\ncreateService      Create a new service for a user\ndeleteService     Delete a service from a user\n\n...\n...\n...\n\n\nExamples of usage:\n\npm getUsers \npm createUser --username StringManolo\npm createService --username StringManolo --service-name Gmail\npm getServices --username StringManolo\npm deleteService --username Stringmanolo --service-name Gmail\n");
                 process.exit();
         }
     }
@@ -377,12 +406,13 @@ else if (cli.deleteUser && ((_a = cli === null || cli === void 0 ? void 0 : cli.
     deleteUser(JSON_PATH, cli.userData.username);
 }
 else if (cli.getServices && ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.username)) {
-    console.log("Showing Services");
     showServices(JSON_PATH, cli.userData.username);
 }
 else if ((cli === null || cli === void 0 ? void 0 : cli.createService) && (cli === null || cli === void 0 ? void 0 : cli.userData)) {
-    console.log("Creating Service");
     createService(JSON_PATH, cli.userData);
+}
+else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.username) && ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.serviceName)) {
+    deleteService(JSON_PATH, cli.userData);
 }
 else {
     //showUsage();
