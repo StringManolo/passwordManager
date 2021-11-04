@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var _a, _b, _c, _d;
+var _a, _b, _c, _d, _e, _f, _g;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Show Services || Create Services || Delete Services
 // Show ID || Create ID || Delete ID
@@ -251,6 +251,58 @@ var deleteService = function (jsonPath, userData) {
     }
     return undefined;
 };
+var createId = function (jsonPath, userData) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var data = getData(jsonPath);
+    if (data && (userData === null || userData === void 0 ? void 0 : userData.username) && (userData === null || userData === void 0 ? void 0 : userData.serviceName) && (userData === null || userData === void 0 ? void 0 : userData.idName)) {
+        var userIndex = 0;
+        var servicesIndex = 0;
+        // check if userData.ids has the mandatory values
+        if (!(userData === null || userData === void 0 ? void 0 : userData.idName) || !((_a = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _a === void 0 ? void 0 : _a.password)) {
+            console.log("Missing --id-name and/or --id-password arguments");
+        }
+        if (data === null || data === void 0 ? void 0 : data.users) {
+            for (var i = 0; i < ((_b = data === null || data === void 0 ? void 0 : data.users) === null || _b === void 0 ? void 0 : _b.length); ++i) {
+                if (data.users[i].username === (userData === null || userData === void 0 ? void 0 : userData.username)) {
+                    userIndex = i;
+                    for (var j = 0; j < ((_d = (_c = data.users[i]) === null || _c === void 0 ? void 0 : _c.services) === null || _d === void 0 ? void 0 : _d.length); ++j) {
+                        if (data.users[i].services[j].name === (userData === null || userData === void 0 ? void 0 : userData.serviceName)) {
+                            servicesIndex = j;
+                            // check if optional ids exists
+                            var aux = {};
+                            if (userData === null || userData === void 0 ? void 0 : userData.idName) {
+                                aux.id = userData === null || userData === void 0 ? void 0 : userData.idName;
+                            }
+                            if ((_e = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _e === void 0 ? void 0 : _e.eu) {
+                                aux.eu = (_f = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _f === void 0 ? void 0 : _f.eu;
+                            }
+                            if ((_g = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _g === void 0 ? void 0 : _g.password) {
+                                aux.password = userData.ids.password;
+                            }
+                            if ((_h = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _h === void 0 ? void 0 : _h.description) {
+                                aux.description = userData.ids.description;
+                            }
+                            data.users[i].services[j].ids.push(aux);
+                            updateDatabase(jsonPath, data);
+                        }
+                    }
+                    break;
+                }
+            }
+            /*
+                  if (!user?.username) {
+                    console.log(`Username "${userData?.username}" not found.`);
+                return undefined;
+                  }
+            
+                  if (!user?.services) {
+                    console.log(`Service "${userData?.service}" not found.`);
+                  }
+            */
+        }
+    }
+    return undefined;
+};
 /*
 const db = {
   users: [{
@@ -277,6 +329,7 @@ const db = {
 }
 */
 var parseArguments = function () {
+    var _a, _b, _c, _d;
     var cli = {};
     for (var i = 0; i < process.argv.length; ++i) {
         var current = process.argv[i];
@@ -348,6 +401,17 @@ var parseArguments = function () {
                 cli.deleteService = next;
                 cli.userData = {};
                 break;
+            case "createId":
+            case "createid":
+            case "createID":
+            case "create-id":
+            case "create_id":
+            case "--create-id":
+                cli.createId = next;
+                cli.userData = {};
+                // @ts-ignore
+                cli.userData.ids = {};
+                break;
             case "username":
             case "--username":
                 if (cli === null || cli === void 0 ? void 0 : cli.userData) {
@@ -362,6 +426,36 @@ var parseArguments = function () {
                     cli.userData.serviceName = next;
                 }
                 break;
+            case "id":
+            case "idName":
+            case "--id":
+            case "--idName":
+            case "--id-name":
+            case "--id_name":
+                if (cli === null || cli === void 0 ? void 0 : cli.userData) {
+                    cli.userData.idName = next;
+                }
+                break;
+            case "--id-email":
+                if ((_a = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _a === void 0 ? void 0 : _a.ids) {
+                    cli.userData.ids.email = next;
+                }
+                break;
+            case "--id-username":
+                if ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.ids) {
+                    cli.userData.ids.username = next;
+                }
+                break;
+            case "--id-password":
+                if ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.ids) {
+                    cli.userData.ids.password = next;
+                }
+                break;
+            case "--id-description":
+                if ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.ids) {
+                    cli.userData.ids.description = next;
+                }
+                break;
             case "key":
             case "--key":
                 if (cli === null || cli === void 0 ? void 0 : cli.userData) {
@@ -374,7 +468,7 @@ var parseArguments = function () {
             case "Help":
             case "-h":
             case "--help":
-                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices        Show all the services for a user\ncreateService      Create a new service for a user\ndeleteService     Delete a service from a user\n\n...\n...\n...\n\n\nExamples of usage:\n\npm getUsers \npm createUser --username StringManolo\npm createService --username StringManolo --service-name Gmail\npm getServices --username StringManolo\npm deleteService --username Stringmanolo --service-name Gmail\n");
+                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices       Show all the services for a user\ncreateService     Create a new service for a user\ndeleteService     Delete a service from a user\n\n  IDS\ngetId\ncreateId          Create new id for a service\ndeleteId \n...\n...\n...\n\n\nExamples of usage:\n\npm getUsers \npm createUser --username StringManolo\npm createService --username StringManolo --service-name Gmail\npm getServices --username StringManolo\npm deleteService --username Stringmanolo --service-name Gmail\n");
                 process.exit();
         }
     }
@@ -413,6 +507,9 @@ else if ((cli === null || cli === void 0 ? void 0 : cli.createService) && (cli =
 }
 else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.username) && ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.serviceName)) {
     deleteService(JSON_PATH, cli.userData);
+}
+else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.username) && ((_f = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _f === void 0 ? void 0 : _f.serviceName) && ((_g = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _g === void 0 ? void 0 : _g.idName)) {
+    createId(JSON_PATH, cli.userData);
 }
 else {
     //showUsage();

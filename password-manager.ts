@@ -57,11 +57,22 @@ interface Database {
   config?: DatabaseConfig
 }
 
+interface Ids {
+  id?: string,
+  eu?: string,
+  email?: string,
+  username?: string,
+  password?: string,
+  description?: string
+}
 
 interface InputUserData {
   username: string,
   key?: string,
-  serviceName: string
+  serviceName?: string,
+  idName?: string,
+  createId?: string,
+  ids?: Ids
 }
 
 interface Cli {
@@ -71,6 +82,7 @@ interface Cli {
   getServices?: true | false,
   createService?: string,
   deleteService?: string,
+  createId?: string,
   userData?: InputUserData
 }
 
@@ -324,6 +336,72 @@ const deleteService = (jsonPath: string, userData: InputUserData) => {
   return undefined;
 }
 
+const createId = (jsonPath: string, userData: InputUserData) => {
+  const data = getData(jsonPath);
+  if (data && userData?.username && userData?.serviceName && userData?.idName) {
+    let userIndex = 0;
+    let servicesIndex = 0;
+
+    // check if userData.ids has the mandatory values
+    if (!userData?.idName || !userData?.ids?.password) {
+      console.log("Missing --id-name and/or --id-password arguments");
+    }
+
+    if (data?.users) {
+      for (let i = 0; i < data?.users?.length; ++i) {
+        if (data.users[i].username === userData?.username) {
+	  userIndex = i;
+	  for (let j = 0; j < data.users[i]?.services?.length; ++j) {
+            if (data.users[i].services[j].name === userData?.serviceName) {
+	      servicesIndex = j;
+	      // check if optional ids exists
+	      let aux = {} as any;
+
+	      if (userData?.idName) {
+                aux.id = userData?.idName;
+	      }
+
+	      if (userData?.ids?.eu) {
+                aux.eu = userData?.ids?.eu;
+	      }
+
+	      if (userData?.ids?.password) {
+                aux.password = userData.ids.password;
+	      }
+
+	      if (userData?.ids?.description) {
+                aux.description = userData.ids.description;
+	      }
+
+              // check if already exists the idName in the database to avoid create duplicates
+
+
+              data.users[i].services[j].ids.push(aux);
+	      updateDatabase(jsonPath, data);
+	    }
+	  }
+	  break;
+	}
+      }
+
+/*
+      if (!user?.username) {
+        console.log(`Username "${userData?.username}" not found.`);
+	return undefined;
+      }
+
+      if (!user?.services) {
+        console.log(`Service "${userData?.service}" not found.`);
+      }
+*/
+
+
+    }
+
+  }
+  return undefined;
+}
+
 
 /*
 const db = {
@@ -430,6 +508,18 @@ const parseArguments = (): Cli => {
         cli.userData = {} as any;
       break;
 
+      case "createId":
+      case "createid":
+      case "createID":
+      case "create-id":
+      case "create_id":
+      case "--create-id":
+        cli.createId = next;
+        cli.userData = {} as any;
+	// @ts-ignore
+	cli.userData.ids = {} as any;
+      break;
+
       case "username":
       case "--username":
         if (cli?.userData) {
@@ -443,6 +533,42 @@ const parseArguments = (): Cli => {
       case "--service_name":
         if (cli?.userData) {
           cli.userData.serviceName = next;
+        }
+      break;
+
+      case "id":
+      case "idName":
+      case "--id":
+      case "--idName":
+      case "--id-name":
+      case "--id_name":
+        if (cli?.userData) {
+          cli.userData.idName = next;
+        }
+      break;
+
+
+      case "--id-email":
+        if (cli?.userData?.ids) {
+          cli.userData.ids.email = next;
+        }
+      break;
+
+      case "--id-username":
+        if (cli?.userData?.ids) {
+          cli.userData.ids.username = next;
+        }
+      break;
+
+      case "--id-password":
+        if (cli?.userData?.ids) {
+          cli.userData.ids.password = next;
+        }
+      break;
+
+      case "--id-description":
+        if (cli?.userData?.ids) {
+          cli.userData.ids.description = next;
         }
       break;
 
@@ -467,10 +593,14 @@ createUser        Create new users
 deleteUser        Delete a user
 
   SERVICE
-getServices        Show all the services for a user
-createService      Create a new service for a user
+getServices       Show all the services for a user
+createService     Create a new service for a user
 deleteService     Delete a service from a user
 
+  IDS
+getId
+createId          Create new id for a service
+deleteId 
 ...
 ...
 ...
@@ -529,6 +659,8 @@ if (cli.getUsers) {
   createService(JSON_PATH, cli.userData);
 } else if (cli?.deleteService && cli?.userData?.username && cli?.userData?.serviceName) {
   deleteService(JSON_PATH, cli.userData);
+} else if (cli?.createId && cli?.userData?.username && cli?.userData?.serviceName && cli?.userData?.idName) {
+  createId(JSON_PATH, cli.userData);
 } else {
   //showUsage();
 }
