@@ -132,7 +132,7 @@ var getUsers = function (jsonPath) {
 var showUsers = function (jsonPath) {
     var users = getUsers(jsonPath);
     if (!users) {
-        console.log("Not users to show");
+        console.log("No users to show");
         return undefined;
     }
     console.log("USERS:");
@@ -186,7 +186,7 @@ var showServices = function (jsonPath, username) {
     var _a, _b;
     var users = getUsers(jsonPath);
     if (!users) {
-        console.log("Not users to show");
+        console.log("No users to show");
         return undefined;
     }
     for (var i = 0; i < users.length; ++i) {
@@ -263,7 +263,7 @@ var showIds = function (jsonPath, username, serviceName) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     var users = getUsers(jsonPath);
     if (!users) {
-        console.log("Not users to show");
+        console.log("No users to show");
         return undefined;
     }
     for (var i = 0; i < users.length; ++i) {
@@ -556,7 +556,7 @@ var parseArguments = function () {
             case "Help":
             case "-h":
             case "--help":
-                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices       Show all the services for a user\ncreateService     Create a new service for a user\ndeleteService     Delete a service from a user\n\n  IDS\ngetId             Show all the ids from a user's service\ncreateId          Create new id for a service\ndeleteId          Delete an id from a user's service\n\n...\n...\n...\n\n\nExamples of usage:\n\npm getUsers \npm createUser --username StringManolo\npm createService --username StringManolo --service-name Gmail\npm getServices --username StringManolo\npm deleteService --username Stringmanolo --service-name Gmail\n");
+                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices       Show all the services for a user\ncreateService     Create a new service for a user\ndeleteService     Delete a service from a user\n\n  IDS\ngetId             Show all the ids from a user's service\ncreateId          Create new id for a service\ndeleteId          Delete an id from a user's service\n\n...\n...\n...\n\n\nExamples of usage:\n\npm getUsers \n\npm createUser --username StringManolo\n\npm createService --username StringManolo --service-name Gmail\n\npm createId --username StringManolo --service-name Gmail --id-name \"Main Account\" --id-email \"stringmanolo@gmail.com\" --id-username stringmanolo --id-description \"Email for personal data\" --id-password \"abc\"\n\npm getServices --username StringManolo\n\npm deleteService --username Stringmanolo --service-name Gmail\n\n");
                 process.exit();
         }
     }

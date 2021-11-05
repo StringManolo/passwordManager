@@ -216,7 +216,7 @@ const getUsers = (jsonPath: string) => {
 const showUsers = (jsonPath: string) => {
   const users = getUsers(jsonPath);
   if (!users) {
-    console.log("Not users to show");
+    console.log("No users to show");
     return undefined;
   }
 
@@ -274,7 +274,7 @@ const deleteUser = (jsonPath: string, username: string) => {
 const showServices = (jsonPath: string, username: string) => {
   const users = getUsers(jsonPath);
   if (!users) {
-    console.log("Not users to show");
+    console.log("No users to show");
     return undefined;
   }
 
@@ -356,7 +356,7 @@ const deleteService = (jsonPath: string, userData: InputUserData) => {
 const showIds = (jsonPath: string, username: string, serviceName: string) => {
   const users = getUsers(jsonPath);
   if (!users) {
-    console.log("Not users to show");
+    console.log("No users to show");
     return undefined;
   }
 
@@ -705,10 +705,17 @@ deleteId          Delete an id from a user's service
 Examples of usage:
 
 pm getUsers 
+
 pm createUser --username StringManolo
+
 pm createService --username StringManolo --service-name Gmail
+
+pm createId --username StringManolo --service-name Gmail --id-name "Main Account" --id-email "stringmanolo@gmail.com" --id-username stringmanolo --id-description "Email for personal data" --id-password "abc"
+
 pm getServices --username StringManolo
+
 pm deleteService --username Stringmanolo --service-name Gmail
+
 `);
         process.exit(); 
     }
