@@ -282,6 +282,13 @@ var createId = function (jsonPath, userData) {
                             if ((_h = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _h === void 0 ? void 0 : _h.description) {
                                 aux.description = userData.ids.description;
                             }
+                            // check if already exists the idName in the database to avoid create duplicates
+                            for (var k in data.users[i].services[j].ids) {
+                                if (data.users[i].services[j].ids[k].id === userData.idName) {
+                                    console.log("id \"" + userData.idName + "\" already exists in this service. Delete old one or change new id and try again");
+                                    return undefined;
+                                }
+                            }
                             data.users[i].services[j].ids.push(aux);
                             updateDatabase(jsonPath, data);
                         }

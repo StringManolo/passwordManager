@@ -374,6 +374,12 @@ const createId = (jsonPath: string, userData: InputUserData) => {
 	      }
 
               // check if already exists the idName in the database to avoid create duplicates
+	      for (let k in data.users[i].services[j].ids) {
+                if (data.users[i].services[j].ids[k].id === userData.idName) {
+                  console.log(`id "${userData.idName}" already exists in this service. Delete old one or change new id and try again`);
+		  return undefined;
+		}
+	      }
 
 
               data.users[i].services[j].ids.push(aux);
