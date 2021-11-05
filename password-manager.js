@@ -19,10 +19,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Show Services || Create Services || Delete Services
 // Show ID || Create ID || Delete ID
+// Show ID Fields || Add ID Fields || Remove ID Fields
 // Config
 //   Select Cipher
 //   Set Master Key
@@ -344,6 +345,30 @@ var createId = function (jsonPath, userData) {
     }
     return undefined;
 };
+var deleteId = function (jsonPath, userData) {
+    var _a, _b, _c, _d;
+    var data = getData(jsonPath);
+    if (data && (userData === null || userData === void 0 ? void 0 : userData.username) && (userData === null || userData === void 0 ? void 0 : userData.serviceName) && (userData === null || userData === void 0 ? void 0 : userData.idName)) {
+        if (data === null || data === void 0 ? void 0 : data.users) {
+            for (var i = 0; i < ((_a = data === null || data === void 0 ? void 0 : data.users) === null || _a === void 0 ? void 0 : _a.length); ++i) {
+                if (data.users[i].username === userData.username) {
+                    for (var j = 0; j < ((_c = (_b = data.users[i]) === null || _b === void 0 ? void 0 : _b.services) === null || _c === void 0 ? void 0 : _c.length); ++j) {
+                        if (data.users[i].services[j].name === (userData === null || userData === void 0 ? void 0 : userData.serviceName)) {
+                            for (var k = 0; k < ((_d = data.users[i].services[k]) === null || _d === void 0 ? void 0 : _d.ids.length); ++k) {
+                                if (data.users[i].services[j].ids[k].id === (userData === null || userData === void 0 ? void 0 : userData.idName)) {
+                                    data.users[i].services[j].ids.splice(k, 1);
+                                    updateDatabase(jsonPath, data);
+                                    return undefined;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return undefined;
+};
 /*
 const db = {
   users: [{
@@ -353,7 +378,7 @@ const db = {
       name: "gmail",
       ids: [{
         id: "main account",
-        eu: "mvc@gmail.com",
+        eu: "stringmanolo@gmail.com",
         password: "12345678",
         description: "This is the password for my personal gmail account"
       }]
@@ -462,12 +487,21 @@ var parseArguments = function () {
                 // @ts-ignore
                 cli.userData.ids = {};
                 break;
+            case "deleteId":
+            case "deleteid":
+            case "delete-id":
+            case "delete_id":
+            case "--delete-id":
+                cli.deleteId = next;
+                cli.userData = {};
+                break;
             case "username":
             case "--username":
                 if (cli === null || cli === void 0 ? void 0 : cli.userData) {
                     cli.userData.username = next;
                 }
                 break;
+            case "--service":
             case "serviceName":
             case "--serviceName":
             case "--service-name":
@@ -522,7 +556,7 @@ var parseArguments = function () {
             case "Help":
             case "-h":
             case "--help":
-                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices       Show all the services for a user\ncreateService     Create a new service for a user\ndeleteService     Delete a service from a user\n\n  IDS\ngetId\ncreateId          Create new id for a service\ndeleteId \n...\n...\n...\n\n\nExamples of usage:\n\npm getUsers \npm createUser --username StringManolo\npm createService --username StringManolo --service-name Gmail\npm getServices --username StringManolo\npm deleteService --username Stringmanolo --service-name Gmail\n");
+                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices       Show all the services for a user\ncreateService     Create a new service for a user\ndeleteService     Delete a service from a user\n\n  IDS\ngetId             Show all the ids from a user's service\ncreateId          Create new id for a service\ndeleteId          Delete an id from a user's service\n\n...\n...\n...\n\n\nExamples of usage:\n\npm getUsers \npm createUser --username StringManolo\npm createService --username StringManolo --service-name Gmail\npm getServices --username StringManolo\npm deleteService --username Stringmanolo --service-name Gmail\n");
                 process.exit();
         }
     }
@@ -544,30 +578,34 @@ createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
 createDatabase(JSON_PATH); // create json file (database)
 var cli = parseArguments(); // parse arguments from cli
 // TODO: ask for masterkey before decrypting
-if (cli.getUsers) {
+if (cli === null || cli === void 0 ? void 0 : cli.getUsers) {
     showUsers(JSON_PATH);
 }
-else if (cli.createUser && cli.userData) {
+else if ((cli === null || cli === void 0 ? void 0 : cli.createUser) && cli.userData) {
     createUser(JSON_PATH, cli.userData);
 }
-else if (cli.deleteUser && ((_a = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _a === void 0 ? void 0 : _a.username)) {
+else if ((cli === null || cli === void 0 ? void 0 : cli.deleteUser) && ((_a = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _a === void 0 ? void 0 : _a.username)) {
     deleteUser(JSON_PATH, cli.userData.username);
 }
-else if (cli.getServices && ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.username)) {
+else if ((cli === null || cli === void 0 ? void 0 : cli.getServices) && ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.username)) {
     showServices(JSON_PATH, cli.userData.username);
 }
 else if ((cli === null || cli === void 0 ? void 0 : cli.createService) && (cli === null || cli === void 0 ? void 0 : cli.userData)) {
     createService(JSON_PATH, cli.userData);
 }
-else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.username) && ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.serviceName)) {
+else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.username) && ((_d = cli.userData) === null || _d === void 0 ? void 0 : _d.serviceName)) {
     deleteService(JSON_PATH, cli.userData);
 }
-else if ((cli === null || cli === void 0 ? void 0 : cli.getIds) && ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.username) && ((_f = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _f === void 0 ? void 0 : _f.serviceName)) {
+else if ((cli === null || cli === void 0 ? void 0 : cli.getIds) && ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.username) && ((_f = cli.userData) === null || _f === void 0 ? void 0 : _f.serviceName)) {
     showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
 }
-else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_g = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _g === void 0 ? void 0 : _g.username) && ((_h = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _h === void 0 ? void 0 : _h.serviceName) && ((_j = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _j === void 0 ? void 0 : _j.idName)) {
+else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_g = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _g === void 0 ? void 0 : _g.username) && ((_h = cli.userData) === null || _h === void 0 ? void 0 : _h.serviceName) && ((_j = cli.userData) === null || _j === void 0 ? void 0 : _j.idName)) {
     createId(JSON_PATH, cli.userData);
 }
+else if ((cli === null || cli === void 0 ? void 0 : cli.deleteId) && ((_k = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _k === void 0 ? void 0 : _k.username) && ((_l = cli.userData) === null || _l === void 0 ? void 0 : _l.serviceName) && ((_m = cli.userData) === null || _m === void 0 ? void 0 : _m.idName)) {
+    deleteId(JSON_PATH, cli.userData);
+}
 else {
-    //showUsage();
+    // detect what command is used
+    // showUsage(commandName);
 }

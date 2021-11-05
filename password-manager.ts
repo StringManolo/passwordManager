@@ -4,6 +4,8 @@
 
 // Show ID || Create ID || Delete ID
 
+// Show ID Fields || Add ID Fields || Remove ID Fields
+
 // Config
 //   Select Cipher
 //   Set Master Key
@@ -85,7 +87,9 @@ interface Cli {
   deleteService?: string,
 
   getIds?: true | false,
-  createId?: string
+  createId?: string,
+  deleteId?: string,
+
   userData?: InputUserData
 }
 
@@ -446,6 +450,29 @@ const createId = (jsonPath: string, userData: InputUserData) => {
   return undefined;
 }
 
+const deleteId = (jsonPath: string, userData: InputUserData) => {
+  const data = getData(jsonPath);
+  if (data && userData?.username && userData?.serviceName && userData?.idName) {
+    if (data?.users) {
+      for (let i = 0; i < data?.users?.length; ++i) {
+        if (data.users[i].username === userData.username) {
+          for (let j = 0; j < data.users[i]?.services?.length; ++j) {
+            if (data.users[i].services[j].name === userData?.serviceName) {
+              for (let k = 0; k < data.users[i].services[k]?.ids.length; ++k) {
+                if (data.users[i].services[j].ids[k].id === userData?.idName) {
+                  data.users[i].services[j].ids.splice(k, 1);
+		  updateDatabase(jsonPath, data);
+		  return undefined;
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return undefined;
+}
 
 /*
 const db = {
@@ -456,7 +483,7 @@ const db = {
       name: "gmail",
       ids: [{
         id: "main account",
-        eu: "mvc@gmail.com",
+        eu: "stringmanolo@gmail.com",
         password: "12345678",
         description: "This is the password for my personal gmail account"
       }]
@@ -574,6 +601,15 @@ const parseArguments = (): Cli => {
 	cli.userData.ids = {} as any;
       break;
 
+      case "deleteId":
+      case "deleteid":
+      case "delete-id":
+      case "delete_id":
+      case "--delete-id":
+        cli.deleteId = next;
+        cli.userData = {} as any;
+      break;
+
       case "username":
       case "--username":
         if (cli?.userData) {
@@ -581,6 +617,7 @@ const parseArguments = (): Cli => {
 	}
       break;
 
+      case "--service":
       case "serviceName":
       case "--serviceName":
       case "--service-name":
@@ -656,9 +693,10 @@ createService     Create a new service for a user
 deleteService     Delete a service from a user
 
   IDS
-getId
+getId             Show all the ids from a user's service
 createId          Create new id for a service
-deleteId 
+deleteId          Delete an id from a user's service
+
 ...
 ...
 ...
@@ -705,24 +743,27 @@ const cli = parseArguments(); // parse arguments from cli
 
 // TODO: ask for masterkey before decrypting
 
-if (cli.getUsers) { 
+if (cli?.getUsers) { 
   showUsers(JSON_PATH);
-} else if (cli.createUser && cli.userData) {
+} else if (cli?.createUser && cli.userData) {
   createUser(JSON_PATH, cli.userData);
-} else if (cli.deleteUser && cli?.userData?.username) {
+} else if (cli?.deleteUser && cli?.userData?.username) {
   deleteUser(JSON_PATH, cli.userData.username);
-} else if (cli.getServices && cli?.userData?.username) {
+} else if (cli?.getServices && cli?.userData?.username) {
   showServices(JSON_PATH, cli.userData.username);
 } else if (cli?.createService && cli?.userData) {
   createService(JSON_PATH, cli.userData);
-} else if (cli?.deleteService && cli?.userData?.username && cli?.userData?.serviceName) {
+} else if (cli?.deleteService && cli?.userData?.username && cli.userData?.serviceName) {
   deleteService(JSON_PATH, cli.userData);
-} else if (cli?.getIds && cli?.userData?.username && cli?.userData?.serviceName) {
+} else if (cli?.getIds && cli?.userData?.username && cli.userData?.serviceName) {
   showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
-} else if (cli?.createId && cli?.userData?.username && cli?.userData?.serviceName && cli?.userData?.idName) {
+} else if (cli?.createId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
   createId(JSON_PATH, cli.userData);
+} else if (cli?.deleteId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
+  deleteId(JSON_PATH, cli.userData);
 } else {
-  //showUsage();
+  // detect what command is used
+  // showUsage(commandName);
 }
 
 
