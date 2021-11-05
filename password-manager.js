@@ -155,6 +155,7 @@ var createUser = function (jsonPath, userData) {
         if (data === null || data === void 0 ? void 0 : data.users) {
             for (var i = 0; i < ((_a = data === null || data === void 0 ? void 0 : data.users) === null || _a === void 0 ? void 0 : _a.length); ++i) {
                 if (data.users[i].username === user.username) {
+                    console.log("\nUser \"" + user.username + "\" already exists");
                     return undefined;
                 }
             }
@@ -224,6 +225,12 @@ var createService = function (jsonPath, userData) {
                 user.services = [];
             }
             // TODO: check if service already exists
+            for (var j in data.users[userIndex].services) {
+                if (data.users[userIndex].services[j].name === userData.serviceName) {
+                    console.log("\nService \"" + userData.serviceName + "\" already exists");
+                    return undefined;
+                }
+            }
             user.services.push({ name: userData.serviceName, ids: [] });
             data.users[userIndex] = user;
             updateDatabase(jsonPath, data);
@@ -285,27 +292,18 @@ var createId = function (jsonPath, userData) {
                             // check if already exists the idName in the database to avoid create duplicates
                             for (var k in data.users[i].services[j].ids) {
                                 if (data.users[i].services[j].ids[k].id === userData.idName) {
-                                    console.log("id \"" + userData.idName + "\" already exists in this service. Delete old one or change new id and try again");
+                                    console.log("\nId \"" + userData.idName + "\" already exists");
                                     return undefined;
                                 }
                             }
                             data.users[i].services[j].ids.push(aux);
                             updateDatabase(jsonPath, data);
+                            return undefined;
                         }
                     }
                     break;
                 }
             }
-            /*
-                  if (!user?.username) {
-                    console.log(`Username "${userData?.username}" not found.`);
-                return undefined;
-                  }
-            
-                  if (!user?.services) {
-                    console.log(`Service "${userData?.service}" not found.`);
-                  }
-            */
         }
     }
     return undefined;
