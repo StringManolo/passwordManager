@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var _a, _b, _c, _d, _e, _f, _g;
+var _a, _b, _c, _d, _e, _f, _g, _h, _j;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Show Services || Create Services || Delete Services
 // Show ID || Create ID || Delete ID
@@ -136,7 +136,7 @@ var showUsers = function (jsonPath) {
     }
     console.log("USERS:");
     for (var i = 0; i < users.length; ++i) {
-        console.log("  " + (i + 1) + " - " + users[i].username);
+        console.log("  " + (+i + 1) + " - " + users[i].username);
     }
     console.log("\n");
     return undefined;
@@ -194,7 +194,7 @@ var showServices = function (jsonPath, username) {
             if ((_b = users[i].services) === null || _b === void 0 ? void 0 : _b.length) {
                 console.log("SERVICES:");
                 for (var j in users[i].services) {
-                    console.log("  " + (j + 1) + " - " + users[i].services[j].name);
+                    console.log("  " + (+j + 1) + " - " + users[i].services[j].name);
                 }
             }
             return undefined;
@@ -258,8 +258,37 @@ var deleteService = function (jsonPath, userData) {
     }
     return undefined;
 };
-var createId = function (jsonPath, userData) {
+var showIds = function (jsonPath, username, serviceName) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
+    var users = getUsers(jsonPath);
+    if (!users) {
+        console.log("Not users to show");
+        return undefined;
+    }
+    for (var i = 0; i < users.length; ++i) {
+        if (((_a = users[i]) === null || _a === void 0 ? void 0 : _a.username) === username) {
+            if ((_b = users[i].services) === null || _b === void 0 ? void 0 : _b.length) {
+                for (var j in users[i].services) {
+                    if (((_c = users[i].services[j]) === null || _c === void 0 ? void 0 : _c.name) === serviceName) {
+                        if ((_e = (_d = users[i].services[j]) === null || _d === void 0 ? void 0 : _d.ids) === null || _e === void 0 ? void 0 : _e.length) {
+                            console.log("IDS:");
+                            for (var k in users[i].services[j].ids) {
+                                console.log("  " + (+k + 1) + " - " + ((_f = users[i].services[j].ids[k]) === null || _f === void 0 ? void 0 : _f.id));
+                                if ((_g = users[i].services[j].ids[k]) === null || _g === void 0 ? void 0 : _g.description) {
+                                    console.log((_h = users[i].services[j].ids[k]) === null || _h === void 0 ? void 0 : _h.description);
+                                }
+                                console.log(""); // line break
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return undefined;
+};
+var createId = function (jsonPath, userData) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     var data = getData(jsonPath);
     if (data && (userData === null || userData === void 0 ? void 0 : userData.username) && (userData === null || userData === void 0 ? void 0 : userData.serviceName) && (userData === null || userData === void 0 ? void 0 : userData.idName)) {
         var userIndex = 0;
@@ -277,6 +306,7 @@ var createId = function (jsonPath, userData) {
                             servicesIndex = j;
                             // check if optional ids exists
                             var aux = {};
+                            // You can make this checks shorter by looping trought userData.ids keys 
                             if (userData === null || userData === void 0 ? void 0 : userData.idName) {
                                 aux.id = userData === null || userData === void 0 ? void 0 : userData.idName;
                             }
@@ -286,7 +316,13 @@ var createId = function (jsonPath, userData) {
                             if ((_g = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _g === void 0 ? void 0 : _g.password) {
                                 aux.password = userData.ids.password;
                             }
-                            if ((_h = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _h === void 0 ? void 0 : _h.description) {
+                            if ((_h = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _h === void 0 ? void 0 : _h.email) {
+                                aux.email = userData.ids.email;
+                            }
+                            if ((_j = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _j === void 0 ? void 0 : _j.username) {
+                                aux.username = userData.ids.username;
+                            }
+                            if ((_k = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _k === void 0 ? void 0 : _k.description) {
                                 aux.description = userData.ids.description;
                             }
                             // check if already exists the idName in the database to avoid create duplicates
@@ -406,6 +442,15 @@ var parseArguments = function () {
                 cli.deleteService = next;
                 cli.userData = {};
                 break;
+            case "getIds":
+            case "getIDs":
+            case "get-ids":
+            case "get_ids":
+            case "--ids":
+            case "--get-ids":
+                cli.getIds = true;
+                cli.userData = {};
+                break;
             case "createId":
             case "createid":
             case "createID":
@@ -442,21 +487,25 @@ var parseArguments = function () {
                 }
                 break;
             case "--id-email":
+            case "--email":
                 if ((_a = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _a === void 0 ? void 0 : _a.ids) {
                     cli.userData.ids.email = next;
                 }
                 break;
             case "--id-username":
+            case "--account":
                 if ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.ids) {
                     cli.userData.ids.username = next;
                 }
                 break;
             case "--id-password":
+            case "--password":
                 if ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.ids) {
                     cli.userData.ids.password = next;
                 }
                 break;
             case "--id-description":
+            case "--description":
                 if ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.ids) {
                     cli.userData.ids.description = next;
                 }
@@ -513,7 +562,10 @@ else if ((cli === null || cli === void 0 ? void 0 : cli.createService) && (cli =
 else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.username) && ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.serviceName)) {
     deleteService(JSON_PATH, cli.userData);
 }
-else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.username) && ((_f = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _f === void 0 ? void 0 : _f.serviceName) && ((_g = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _g === void 0 ? void 0 : _g.idName)) {
+else if ((cli === null || cli === void 0 ? void 0 : cli.getIds) && ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.username) && ((_f = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _f === void 0 ? void 0 : _f.serviceName)) {
+    showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
+}
+else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_g = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _g === void 0 ? void 0 : _g.username) && ((_h = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _h === void 0 ? void 0 : _h.serviceName) && ((_j = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _j === void 0 ? void 0 : _j.idName)) {
     createId(JSON_PATH, cli.userData);
 }
 else {

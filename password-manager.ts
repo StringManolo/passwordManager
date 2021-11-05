@@ -79,10 +79,13 @@ interface Cli {
   getUsers?: true | false,
   createUser?: string,
   deleteUser?: string,
+
   getServices?: true | false,
   createService?: string,
   deleteService?: string,
-  createId?: string,
+
+  getIds?: true | false,
+  createId?: string
   userData?: InputUserData
 }
 
@@ -215,7 +218,7 @@ const showUsers = (jsonPath: string) => {
 
   console.log("USERS:");
   for (let i = 0; i < users.length; ++i) {
-    console.log(`  ${i + 1} - ${users[i].username}`);
+    console.log(`  ${+i + 1} - ${users[i].username}`);
   }
   console.log("\n");
   return undefined;
@@ -277,7 +280,7 @@ const showServices = (jsonPath: string, username: string) => {
       if (users[i].services?.length) {
         console.log("SERVICES:");
         for (let j in users[i].services) {
-          console.log(`  ${j + 1} - ${users[i].services[j].name}`);
+          console.log(`  ${+j + 1} - ${users[i].services[j].name}`);
 	}
       }
       return undefined;
@@ -346,6 +349,36 @@ const deleteService = (jsonPath: string, userData: InputUserData) => {
   return undefined;
 }
 
+const showIds = (jsonPath: string, username: string, serviceName: string) => {
+  const users = getUsers(jsonPath);
+  if (!users) {
+    console.log("Not users to show");
+    return undefined;
+  }
+
+  for (let i = 0; i < users.length; ++i) {
+    if (users[i]?.username === username) {
+      if (users[i].services?.length) {
+        for (let j in users[i].services) {
+          if (users[i].services[j]?.name === serviceName) {
+            if (users[i].services[j]?.ids?.length) {
+	      console.log("IDS:");
+              for (let k in users[i].services[j].ids) {
+                console.log(`  ${+k + 1} - ${users[i].services[j].ids[k]?.id}`);
+		if (users[i].services[j].ids[k]?.description) {
+                  console.log(users[i].services[j].ids[k]?.description);
+		}
+		console.log(""); // line break
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return undefined;
+}
+
 const createId = (jsonPath: string, userData: InputUserData) => {
   const data = getData(jsonPath);
   if (data && userData?.username && userData?.serviceName && userData?.idName) {
@@ -367,6 +400,7 @@ const createId = (jsonPath: string, userData: InputUserData) => {
 	      // check if optional ids exists
 	      let aux = {} as any;
 
+              // You can make this checks shorter by looping trought userData.ids keys 
 	      if (userData?.idName) {
                 aux.id = userData?.idName;
 	      }
@@ -377,6 +411,14 @@ const createId = (jsonPath: string, userData: InputUserData) => {
 
 	      if (userData?.ids?.password) {
                 aux.password = userData.ids.password;
+	      }
+
+              if (userData?.ids?.email) {
+                aux.email = userData.ids.email;
+	      }
+
+              if (userData?.ids?.username) {
+                aux.username = userData.ids.username;
 	      }
 
 	      if (userData?.ids?.description) {
@@ -510,6 +552,16 @@ const parseArguments = (): Cli => {
         cli.userData = {} as any;
       break;
 
+      case "getIds":
+      case "getIDs":
+      case "get-ids":
+      case "get_ids":
+      case "--ids":
+      case "--get-ids":
+        cli.getIds = true;
+	cli.userData = {} as any;
+      break;
+
       case "createId":
       case "createid":
       case "createID":
@@ -551,24 +603,28 @@ const parseArguments = (): Cli => {
 
 
       case "--id-email":
+      case "--email":
         if (cli?.userData?.ids) {
           cli.userData.ids.email = next;
         }
       break;
 
       case "--id-username":
+      case "--account":
         if (cli?.userData?.ids) {
           cli.userData.ids.username = next;
         }
       break;
 
       case "--id-password":
+      case "--password":
         if (cli?.userData?.ids) {
           cli.userData.ids.password = next;
         }
       break;
 
       case "--id-description":
+      case "--description":
         if (cli?.userData?.ids) {
           cli.userData.ids.description = next;
         }
@@ -661,6 +717,8 @@ if (cli.getUsers) {
   createService(JSON_PATH, cli.userData);
 } else if (cli?.deleteService && cli?.userData?.username && cli?.userData?.serviceName) {
   deleteService(JSON_PATH, cli.userData);
+} else if (cli?.getIds && cli?.userData?.username && cli?.userData?.serviceName) {
+  showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
 } else if (cli?.createId && cli?.userData?.username && cli?.userData?.serviceName && cli?.userData?.idName) {
   createId(JSON_PATH, cli.userData);
 } else {
