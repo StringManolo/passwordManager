@@ -692,8 +692,8 @@ getServices       Show all the services for a user
 createService     Create a new service for a user
 deleteService     Delete a service from a user
 
-  IDS
-getId             Show all the ids from a user's service
+  ID
+getIds            Show all the ids from a user's service
 createId          Create new id for a service
 deleteId          Delete an id from a user's service
 
