@@ -81,6 +81,8 @@ interface InputUserData {
 }
 
 interface Cli {
+  setMasterKey?: true | false,
+
   getUsers?: true | false,
   createUser?: string,
   deleteUser?: string,
@@ -555,6 +557,23 @@ const showIdFields = (jsonPath: string, userData: InputUserData) => {
   return undefined;
 }
 
+const setMasterKey = (jsonPath: string, key: string) => {
+  const data = getData(jsonPath);
+
+  if (!data) {
+    return undefined;
+  }
+
+  data.masterKey = key;
+  // @ts-ignore
+  data.config.useMasterKey = true;
+  // cipher the expected test
+  // set the cipher text result into masterTestKey
+
+
+  updateDatabase(jsonPath, data);
+  return undefined;
+}
 
 /*
 const db = {
@@ -589,6 +608,13 @@ const parseArguments = (): Cli => {
     const current = process.argv[i];
     const next = process.argv[+i + 1];
     switch (current) {
+      case "setMasterKey":
+      case "setmasterkey":
+      case "set-master-key":
+        cli.setMasterKey = true;
+        cli.userData = {} as any;
+      break;
+
       case "getUsers":
       case "getusers":
       case "get-users":
@@ -789,6 +815,9 @@ const parseArguments = (): Cli => {
       case "--help":
         console.log(`Help Menú:
 
+  KEY
+setMasterKey      Key to access the database
+		    
   USER
 getUsers          Show all the users
 createUser        Create new users
@@ -804,8 +833,8 @@ getIds            Show all the ids from a user's service
 createId          Create new id for a service
 deleteId          Delete an id from a user's service
 
-  FIELDS
-getFields       Show selected fields from an id
+  FIELD
+getFields         Show selected fields from an id
 
 ...
 ...
@@ -818,6 +847,7 @@ Usage:
 
 mainAction list:
 
+setMasterKey
 getUsers
 createUser
 deleteUser
@@ -831,6 +861,7 @@ getFields
 
 
 arguments list
+--key
 --username
 --service-name
 --id-name
@@ -842,6 +873,7 @@ arguments list
 
 
 Available arguments for each action:
+setMasterKey --key abc123
 
 getUsers
 
@@ -900,7 +932,10 @@ const cli = parseArguments(); // parse arguments from cli
 
 // TODO: ask for masterkey before decrypting
 
-if (cli?.getUsers) { 
+
+if (cli?.setMasterKey && cli?.userData?.key) {
+  setMasterKey(JSON_PATH, cli.userData.key);
+} else if (cli?.getUsers) { 
   showUsers(JSON_PATH);
 } else if (cli?.createUser && cli.userData) {
   createUser(JSON_PATH, cli.userData);
