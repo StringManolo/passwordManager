@@ -34,6 +34,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* PROGRAM MODULES */
 var fs = __importStar(require("fs"));
 var exec = __importStar(require("child_process"));
+var crypto = __importStar(require("crypto"));
 /* UTILS FUNCTIONS */
 var run = function (args) {
     var res = exec.execSync(args).toString();
@@ -449,12 +450,31 @@ var setMasterKey = function (jsonPath, key) {
     if (!data) {
         return undefined;
     }
-    data.masterKey = key;
+    data.masterKey = key; // The key is visible only for debug/development will be removed in prod.
     // @ts-ignore
     data.config.useMasterKey = true;
     // cipher the expected test
+    var algorithm = "aes-192-cbc";
+    crypto.scrypt(key, "salt", 24, function (err, key) {
+        if (err)
+            throw err;
+        crypto.randomFill(new Uint8Array(16), function (err, iv) {
+            if (err)
+                throw err;
+            var cipher = crypto.createCipheriv(algorithm, key, iv);
+            var encrypted = "";
+            cipher.setEncoding("hex");
+            cipher.on("data", function (chunk) { return encrypted += chunk; });
+            cipher.on("end", function () {
+                data.masterTestKey = encrypted;
+                updateDatabase(jsonPath, data);
+            });
+            cipher.write(data.expectedTest); // text being encrypted, program only works if you encrypt this text with right key (A.K.A, you know the key)
+            cipher.end();
+        });
+    });
     // set the cipher text result into masterTestKey
-    updateDatabase(jsonPath, data);
+    // updateDatabase(jsonPath, data); // commented because already updated after cipher
     return undefined;
 };
 /*

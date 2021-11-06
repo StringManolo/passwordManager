@@ -22,7 +22,7 @@
 /* PROGRAM MODULES */
 import * as fs from "fs";
 import * as exec from "child_process";
-
+import * as crypto from "crypto";
 
 
 /* TYPESCRIPT INTERFACES */
@@ -564,14 +564,33 @@ const setMasterKey = (jsonPath: string, key: string) => {
     return undefined;
   }
 
-  data.masterKey = key;
+  data.masterKey = key; // The key is visible only for debug/development will be removed in prod.
   // @ts-ignore
   data.config.useMasterKey = true;
   // cipher the expected test
+  const algorithm = "aes-192-cbc";
+  crypto.scrypt(key, "salt", 24, (err, key) => {
+    if (err) throw err;
+    crypto.randomFill(new Uint8Array(16), (err, iv) => {
+      if (err) throw err;
+      const cipher = crypto.createCipheriv(algorithm, key, iv);
+      let encrypted = "";
+
+      cipher.setEncoding("hex");
+
+      cipher.on("data", (chunk) => encrypted += chunk);
+      cipher.on("end", () => {
+        data.masterTestKey = encrypted;
+	updateDatabase(jsonPath, data);
+      });
+      cipher.write(data.expectedTest); // text being encrypted, program only works if you encrypt this text with right key (A.K.A, you know the key)
+      cipher.end();
+    });
+  });
   // set the cipher text result into masterTestKey
 
 
-  updateDatabase(jsonPath, data);
+  // updateDatabase(jsonPath, data); // commented because already updated after cipher
   return undefined;
 }
 
