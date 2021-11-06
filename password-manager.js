@@ -19,11 +19,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Show Services || Create Services || Delete Services
 // Show ID || Create ID || Delete ID
-// Show ID Fields || Add ID Fields || Remove ID Fields
+// Show ID Fields || Add ID Fields || Edit ID Field ||  Remove ID Fields
 // Config
 //   Select Cipher
 //   Set Master Key
@@ -288,6 +288,83 @@ var showIds = function (jsonPath, username, serviceName) {
     }
     return undefined;
 };
+/*
+const showIdFields = (jsonPath: string, userData: InputUserData) => {
+  const users = getUsers(jsonPath);
+  if (!users) {
+    console.log("No users to show");
+    return undefined;
+  }
+
+  for (let i = 0; i < users.length; ++i) {
+    if (users[i]?.username === userData?.username) {
+      if (users[i].services?.length) {
+        for (let j in users[i].services) {
+          if (users[i].services[j]?.name === userData?.serviceName) {
+            if (users[i].services[j]?.ids?.length) {
+              for (let k in users[i].services[j].ids) {
+        if (users[i].services[j].ids[k].id === userData?.idName) {
+                  const current = users[i].services[j].ids[k];
+                  let aux = {} as any;
+
+                  if (userData?.idName || userData?.ids?.all) {
+            if (current?.id) {
+                      console.log(`id: ${current.id}`);
+            } else {
+                      // console.log("id not found");
+            }
+                  }
+
+                  if (userData?.ids?.eu || userData?.ids?.all) {
+            if (current?.eu) {
+                      console.log(`eu: ${current.eu}`);
+            } else {
+                      // console.log("eu not found");
+            }
+                  }
+
+                  if (userData?.ids?.password || userData?.ids?.all) {
+            if (current?.password) {
+                      console.log(`password: ${current.password}`);
+            } else {
+                      // console.log("password not found");
+            }
+                  }
+
+                  if (userData?.ids?.email || userData?.ids?.all) {
+            if (current?.email) {
+                      console.log(`email: ${current.email}`);
+            } else {
+                      // console.log("email not found");
+            }
+                  }
+
+                  if (userData?.ids?.username || userData?.ids?.all) {
+            if (current?.username) {
+                      console.log(`username: ${current.username}`);
+            } else {
+                      // console.log("username not found");
+            }
+                  }
+
+                  if (userData?.ids?.description || userData?.ids?.all) {
+            if (current?.description) {
+                      console.log(`description: ${current.description}`);
+            } else {
+                      // console.log("description not found");
+            }
+          }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return undefined;
+}
+*/
 var createId = function (jsonPath, userData) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     var data = getData(jsonPath);
@@ -369,6 +446,81 @@ var deleteId = function (jsonPath, userData) {
     }
     return undefined;
 };
+var showIdFields = function (jsonPath, userData) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+    var users = getUsers(jsonPath);
+    if (!users) {
+        console.log("No users to show");
+        return undefined;
+    }
+    for (var i = 0; i < users.length; ++i) {
+        if (((_a = users[i]) === null || _a === void 0 ? void 0 : _a.username) === (userData === null || userData === void 0 ? void 0 : userData.username)) {
+            if ((_b = users[i].services) === null || _b === void 0 ? void 0 : _b.length) {
+                for (var j in users[i].services) {
+                    if (((_c = users[i].services[j]) === null || _c === void 0 ? void 0 : _c.name) === (userData === null || userData === void 0 ? void 0 : userData.serviceName)) {
+                        if ((_e = (_d = users[i].services[j]) === null || _d === void 0 ? void 0 : _d.ids) === null || _e === void 0 ? void 0 : _e.length) {
+                            for (var k in users[i].services[j].ids) {
+                                if (users[i].services[j].ids[k].id === (userData === null || userData === void 0 ? void 0 : userData.idName)) {
+                                    var current = users[i].services[j].ids[k];
+                                    var aux = {};
+                                    if ((userData === null || userData === void 0 ? void 0 : userData.idName) || ((_f = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _f === void 0 ? void 0 : _f.all)) {
+                                        if (current === null || current === void 0 ? void 0 : current.id) {
+                                            console.log("id: " + current.id);
+                                        }
+                                        else {
+                                            // console.log("id not found");
+                                        }
+                                    }
+                                    if (((_g = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _g === void 0 ? void 0 : _g.eu) || ((_h = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _h === void 0 ? void 0 : _h.all)) {
+                                        if (current === null || current === void 0 ? void 0 : current.eu) {
+                                            console.log("eu: " + current.eu);
+                                        }
+                                        else {
+                                            // console.log("eu not found");
+                                        }
+                                    }
+                                    if (((_j = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _j === void 0 ? void 0 : _j.password) || ((_k = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _k === void 0 ? void 0 : _k.all)) {
+                                        if (current === null || current === void 0 ? void 0 : current.password) {
+                                            console.log("password: " + current.password);
+                                        }
+                                        else {
+                                            // console.log("password not found");
+                                        }
+                                    }
+                                    if (((_l = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _l === void 0 ? void 0 : _l.email) || ((_m = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _m === void 0 ? void 0 : _m.all)) {
+                                        if (current === null || current === void 0 ? void 0 : current.email) {
+                                            console.log("email: " + current.email);
+                                        }
+                                        else {
+                                            // console.log("email not found");
+                                        }
+                                    }
+                                    if (((_o = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _o === void 0 ? void 0 : _o.username) || ((_p = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _p === void 0 ? void 0 : _p.all)) {
+                                        if (current === null || current === void 0 ? void 0 : current.username) {
+                                            console.log("username: " + current.username);
+                                        }
+                                        else {
+                                            // console.log("username not found");
+                                        }
+                                    }
+                                    if (((_q = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _q === void 0 ? void 0 : _q.description) || ((_r = userData === null || userData === void 0 ? void 0 : userData.ids) === null || _r === void 0 ? void 0 : _r.all)) {
+                                        if (current === null || current === void 0 ? void 0 : current.description) {
+                                            console.log("description: " + current.description);
+                                        }
+                                        else {
+                                            // console.log("description not found");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return undefined;
+};
 /*
 const db = {
   users: [{
@@ -395,7 +547,7 @@ const db = {
 }
 */
 var parseArguments = function () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     var cli = {};
     for (var i = 0; i < process.argv.length; ++i) {
         var current = process.argv[i];
@@ -495,6 +647,23 @@ var parseArguments = function () {
                 cli.deleteId = next;
                 cli.userData = {};
                 break;
+            case "getField":
+            case "getFields":
+            case "getfield":
+            case "getfields":
+            case "get-field":
+            case "get-fields":
+            case "get_field":
+            case "get_fields":
+            case "--get-field":
+            case "--get-fields":
+            case "getIdField":
+            case "getIdFields":
+                cli.getFields = true;
+                cli.userData = {};
+                // @ts-ignore
+                cli.userData.ids = {};
+                break;
             case "username":
             case "--username":
                 if (cli === null || cli === void 0 ? void 0 : cli.userData) {
@@ -544,6 +713,12 @@ var parseArguments = function () {
                     cli.userData.ids.description = next;
                 }
                 break;
+            case "--id-all":
+            case "--all":
+                if ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.ids) {
+                    cli.userData.ids.all = true;
+                }
+                break;
             case "key":
             case "--key":
                 if (cli === null || cli === void 0 ? void 0 : cli.userData) {
@@ -556,7 +731,7 @@ var parseArguments = function () {
             case "Help":
             case "-h":
             case "--help":
-                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices       Show all the services for a user\ncreateService     Create a new service for a user\ndeleteService     Delete a service from a user\n\n  IDS\ngetId             Show all the ids from a user's service\ncreateId          Create new id for a service\ndeleteId          Delete an id from a user's service\n\n...\n...\n...\n\n\nExamples of usage:\n\npm getUsers \n\npm createUser --username StringManolo\n\npm createService --username StringManolo --service-name Gmail\n\npm createId --username StringManolo --service-name Gmail --id-name \"Main Account\" --id-email \"stringmanolo@gmail.com\" --id-username stringmanolo --id-description \"Email for personal data\" --id-password \"abc\"\n\npm getServices --username StringManolo\n\npm deleteService --username Stringmanolo --service-name Gmail\n\n");
+                console.log("Help Men\u00FA:\n\n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices       Show all the services for a user\ncreateService     Create a new service for a user\ndeleteService     Delete a service from a user\n\n  ID\ngetIds            Show all the ids from a user's service\ncreateId          Create new id for a service\ndeleteId          Delete an id from a user's service\n\n  FIELDS\ngetFields       Show selected fields from an id\n\n...\n...\n...\n\n\nUsage:\n  pm [mainAction] [--mandatory-argument value] {--optional-argument value}\n\n\nmainAction list:\n\ngetUsers\ncreateUser\ndeleteUser\ngetServices \ncreateService\ndeleteService\ngetIds\ncreateId\ndeleteId\ngetFields\n\n\narguments list\n--username\n--service-name\n--id-name\n--id-email\n--id-username\n--id-password\n--id-description\n--id-all\n\n\nAvailable arguments for each action:\n\ngetUsers\n\ncreateUser --username StringManolo\n\ndeleteUser --username StringManolo\n\ngetServices --username StringManolo\n\ncreateService --username StringManolo --service-name gmail\n\ndeleteService --username StringManolo --service-name gmail\n\ngetIds --username StringManolo --service-name gmail \n\ncreateId --username StringManolo --service-name gmail --id-name 'dev account' --id-email 'stringmanolo@gmail.com' --id-password 'abc123456' --id-description 'Gmail account for development'\n\ndeleteId --username StringManolo --service-name gmail --id-name 'dev account'\n\ngetFields --username StringManolo --service-name gmail --id-name 'dev account' --id-password true\n\n\nRemember to use single quotes ' for values that have spaces or may end or modify the shell input like: createUser --username 'My Name Is ;Jhon' \n\n");
                 process.exit();
         }
     }
@@ -604,6 +779,9 @@ else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_g = cli 
 }
 else if ((cli === null || cli === void 0 ? void 0 : cli.deleteId) && ((_k = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _k === void 0 ? void 0 : _k.username) && ((_l = cli.userData) === null || _l === void 0 ? void 0 : _l.serviceName) && ((_m = cli.userData) === null || _m === void 0 ? void 0 : _m.idName)) {
     deleteId(JSON_PATH, cli.userData);
+}
+else if ((cli === null || cli === void 0 ? void 0 : cli.getFields) && ((_o = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _o === void 0 ? void 0 : _o.username) && ((_p = cli.userData) === null || _p === void 0 ? void 0 : _p.serviceName) && ((_q = cli.userData) === null || _q === void 0 ? void 0 : _q.idName)) {
+    showIdFields(JSON_PATH, cli.userData);
 }
 else {
     // detect what command is used

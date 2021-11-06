@@ -4,7 +4,7 @@
 
 // Show ID || Create ID || Delete ID
 
-// Show ID Fields || Add ID Fields || Remove ID Fields
+// Show ID Fields || Add ID Fields || Edit ID Field ||  Remove ID Fields
 
 // Config
 //   Select Cipher
@@ -30,7 +30,9 @@ interface DatabaseUsersServicesIds {
   id: string,
   eu: string, // email/username
   password: string,
-  description: string
+  description: string,
+  email: string,
+  username: string,
 }
 
 interface DatabaseUsersServices {
@@ -65,7 +67,8 @@ interface Ids {
   email?: string,
   username?: string,
   password?: string,
-  description?: string
+  description?: string,
+  all?: boolean
 }
 
 interface InputUserData {
@@ -89,6 +92,8 @@ interface Cli {
   getIds?: true | false,
   createId?: string,
   deleteId?: string,
+
+  getFields?: true | false,
 
   userData?: InputUserData
 }
@@ -474,6 +479,83 @@ const deleteId = (jsonPath: string, userData: InputUserData) => {
   return undefined;
 }
 
+const showIdFields = (jsonPath: string, userData: InputUserData) => {
+  const users = getUsers(jsonPath);
+  if (!users) {
+    console.log("No users to show");
+    return undefined;
+  }
+
+  for (let i = 0; i < users.length; ++i) {
+    if (users[i]?.username === userData?.username) {
+      if (users[i].services?.length) {
+        for (let j in users[i].services) {
+          if (users[i].services[j]?.name === userData?.serviceName) {
+            if (users[i].services[j]?.ids?.length) {
+              for (let k in users[i].services[j].ids) {
+                if (users[i].services[j].ids[k].id === userData?.idName) {
+                  const current = users[i].services[j].ids[k];
+                  let aux = {} as any;
+
+                  if (userData?.idName || userData?.ids?.all) {
+                    if (current?.id) {
+                      console.log(`id: ${current.id}`);
+                    } else {
+                      // console.log("id not found");
+                    }
+                  }
+
+                  if (userData?.ids?.eu || userData?.ids?.all) {
+                    if (current?.eu) {
+                      console.log(`eu: ${current.eu}`);
+                    } else {
+                      // console.log("eu not found");
+                    }
+                  }
+
+                  if (userData?.ids?.password || userData?.ids?.all) {
+                    if (current?.password) {
+                      console.log(`password: ${current.password}`);
+                    } else {
+                      // console.log("password not found");
+                    }
+                  }
+
+                  if (userData?.ids?.email || userData?.ids?.all) {
+                    if (current?.email) {
+                      console.log(`email: ${current.email}`);
+                    } else {
+                      // console.log("email not found");
+                    }
+                  }
+
+                  if (userData?.ids?.username || userData?.ids?.all) {
+                    if (current?.username) {
+                      console.log(`username: ${current.username}`);
+                    } else {
+                      // console.log("username not found");
+                    }
+                  }
+
+                  if (userData?.ids?.description || userData?.ids?.all) {
+                    if (current?.description) {
+                      console.log(`description: ${current.description}`);
+                    } else {
+                      // console.log("description not found");
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+
 /*
 const db = {
   users: [{
@@ -610,6 +692,24 @@ const parseArguments = (): Cli => {
         cli.userData = {} as any;
       break;
 
+      case "getField":
+      case "getFields":
+      case "getfield":
+      case "getfields":
+      case "get-field":
+      case "get-fields":
+      case "get_field":
+      case "get_fields":
+      case "--get-field":
+      case "--get-fields":
+      case "getIdField":
+      case "getIdFields":
+        cli.getFields = true;
+        cli.userData = {} as any;
+	// @ts-ignore
+	cli.userData.ids = {} as any;
+      break;
+
       case "username":
       case "--username":
         if (cli?.userData) {
@@ -667,6 +767,13 @@ const parseArguments = (): Cli => {
         }
       break;
 
+      case "--id-all":
+      case "--all":
+        if (cli?.userData?.ids) {
+          cli.userData.ids.all = true;
+        }
+      break;
+
       case "key":
       case "--key":
         if (cli?.userData) {
@@ -697,24 +804,67 @@ getIds            Show all the ids from a user's service
 createId          Create new id for a service
 deleteId          Delete an id from a user's service
 
+  FIELDS
+getFields       Show selected fields from an id
+
 ...
 ...
 ...
 
 
-Examples of usage:
+Usage:
+  pm [mainAction] [--mandatory-argument value] {--optional-argument value}
 
-pm getUsers 
 
-pm createUser --username StringManolo
+mainAction list:
 
-pm createService --username StringManolo --service-name Gmail
+getUsers
+createUser
+deleteUser
+getServices 
+createService
+deleteService
+getIds
+createId
+deleteId
+getFields
 
-pm createId --username StringManolo --service-name Gmail --id-name "Main Account" --id-email "stringmanolo@gmail.com" --id-username stringmanolo --id-description "Email for personal data" --id-password "abc"
 
-pm getServices --username StringManolo
+arguments list
+--username
+--service-name
+--id-name
+--id-email
+--id-username
+--id-password
+--id-description
+--id-all
 
-pm deleteService --username Stringmanolo --service-name Gmail
+
+Available arguments for each action:
+
+getUsers
+
+createUser --username StringManolo
+
+deleteUser --username StringManolo
+
+getServices --username StringManolo
+
+createService --username StringManolo --service-name gmail
+
+deleteService --username StringManolo --service-name gmail
+
+getIds --username StringManolo --service-name gmail 
+
+createId --username StringManolo --service-name gmail --id-name 'dev account' --id-email 'stringmanolo@gmail.com' --id-password 'abc123456' --id-description 'Gmail account for development'
+
+deleteId --username StringManolo --service-name gmail --id-name 'dev account'
+
+getFields --username StringManolo --service-name gmail --id-name 'dev account' --id-password true
+
+
+Remember to use single quotes ' for values that have spaces or may end or modify the shell input like: createUser --username 'My Name Is ;Jhon' 
 
 `);
         process.exit(); 
@@ -768,6 +918,8 @@ if (cli?.getUsers) {
   createId(JSON_PATH, cli.userData);
 } else if (cli?.deleteId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
   deleteId(JSON_PATH, cli.userData);
+} else if (cli?.getFields && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
+  showIdFields(JSON_PATH, cli.userData);
 } else {
   // detect what command is used
   // showUsage(commandName);
