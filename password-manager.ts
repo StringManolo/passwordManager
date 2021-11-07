@@ -24,7 +24,7 @@
 /* PROGRAM MODULES */
 import * as fs from "fs";
 import * as exec from "child_process";
-// import * as crypto from "crypto";
+import * as crypto from "crypto";
 
 
 /* TYPESCRIPT INTERFACES */
@@ -559,6 +559,49 @@ const showIdFields = (jsonPath: string, userData: InputUserData) => {
   return undefined;
 }
 
+const encrypt = (text: string, key: string) => {
+  return new Promise<string>( (resolve, reject) => {
+    const algorithm = "aes-192-cbc";
+    crypto.scrypt(key, "salt", 24, (err, key) => {
+      if (err) {
+        reject(err);
+      }
+
+      crypto.randomFill(new Uint8Array(16), (err, iv) => {
+        if (err) {
+          reject(err);
+	}
+
+        const cipher = crypto.createCipheriv(algorithm, key, iv);
+        let encrypted = cipher.update(text, "utf-8", "hex");
+        encrypted += cipher.final("hex");
+        resolve(`${Buffer.from(iv).toString("hex")}:${encrypted}`);
+      });
+    });
+  });
+}
+
+
+const decrypt = (text: string, key: string) => {
+  return new Promise<string>( (resolve, reject) => {
+    const algorithm = "aes-192-cbc";
+    crypto.scrypt(key, "salt", 24, (err, key) => {
+      if (err) {
+        reject(err);
+      }
+      
+      const iv = Buffer.from(text.split(":")[0], "hex");
+      const encryptedText = text.split(":")[1];
+      
+      const decipher = crypto.createDecipheriv(algorithm, key, iv);
+      let decrypted = decipher.update(encryptedText, "hex", "utf8");
+      decrypted += decipher.final("utf8");
+      resolve(decrypted);
+    });
+  });
+}
+
+
 const setMasterKey = (jsonPath: string, key: string) => {
   const data = getData(jsonPath);
 
@@ -569,27 +612,25 @@ const setMasterKey = (jsonPath: string, key: string) => {
   data.masterKey = key; // The key is visible only for debug/development will be removed in prod.
   // @ts-ignore
   data.config.useMasterKey = true;
+
   // cipher the expected test
+  (async () => {
+    // @ts-ignore
+    data.masterTestKey = await encrypt(data.expectedTest, data.masterKey);
+    // @ts-ignore
+    const decrypted = await decrypt(data.masterTestKey, data.masterKey);
 
+    if (data.expectedTest !== decrypted) {
+      console.log(`expectedTest "${data.expectedTest}" not matching decrypted "${decrypted}". This means the masterKey is wrong or the cipher suite has a bug`);
+      return undefined;
+    } 
 
-  // encrypt all fields
-
-  updateDatabase(jsonPath, data); 
-  return undefined;
-}
-
-/*
-const testIfMasterKeyIsRight = (jsonPath: string, key: string) =>  {
-  const data = getData(jsonPath);
-
-  if (!data) {
+    updateDatabase(jsonPath, data);
     return undefined;
-  }
-
+  })();
 
   return undefined;
 }
-*/
 
 /*
 const db = {
