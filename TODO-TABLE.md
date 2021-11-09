@@ -1,5 +1,5 @@
-| ----- | ----- |
 | description | status |
+| ----- | ----- |
 | Hash Paswords ? | ❌ | 
 | Add expectedTest to users field (to detect bad decryption and avoid db update) | ❌ |
 | Fix all @ts-ignore | ❌ |
