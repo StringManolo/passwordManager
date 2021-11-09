@@ -134,6 +134,10 @@ var ask = function (question) {
     output(question);
     return input();
 };
+var exit = function (output) {
+    console.log(output);
+    process.exit();
+};
 /* PROGRAM FUNCTIONS */
 var createDatabase = function (dbPath) {
     if (!fs.existsSync(dbPath)) {
@@ -597,13 +601,21 @@ var decryptDatabase = function (jsonPath, key) {
             reject("Database not found");
         }
         (function () { return __awaiter(void 0, void 0, void 0, function () {
-            var aux;
+            var aux, err_1;
             var _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, decrypt(data.iv + ":" + data.users, key)];
+                    case 0:
+                        _b.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, decrypt(data.iv + ":" + data.users, key)];
                     case 1:
                         aux = _b.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        err_1 = _b.sent();
+                        exit("Master Key is wrong");
+                        return [3 /*break*/, 3];
+                    case 3:
                         // @ts-ignore
                         data.users = JSON.parse(aux);
                         if ((_a = data === null || data === void 0 ? void 0 : data.config) === null || _a === void 0 ? void 0 : _a.useMasterKey) {
@@ -671,8 +683,7 @@ var decryptEncryptAtStart = function (cli) {
                         data = getData(JSON_PATH);
                         if (!(typeof (data === null || data === void 0 ? void 0 : data.users) === "string")) return [3 /*break*/, 3];
                         if (cli.setMasterKey) { // Do not encrypt again
-                            console.log("Database is already encrypted");
-                            process.exit();
+                            exit("Database is already encrypted");
                         }
                         if (!((_a = data === null || data === void 0 ? void 0 : data.config) === null || _a === void 0 ? void 0 : _a.useMasterKey)) return [3 /*break*/, 2];
                         if (!((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.key)) { // db is encrypted but key for decryption is not provided.
@@ -933,7 +944,7 @@ var parseArguments = function () {
             case "-h":
             case "--help":
                 console.log("Help Men\u00FA:\n\n  KEY\nsetMasterKey      Key to access the database\n\t\t    \n  USER\ngetUsers          Show all the users\ncreateUser        Create new users\ndeleteUser        Delete a user\n\n  SERVICE\ngetServices       Show all the services for a user\ncreateService     Create a new service for a user\ndeleteService     Delete a service from a user\n\n  ID\ngetIds            Show all the ids from a user's service\ncreateId          Create new id for a service\ndeleteId          Delete an id from a user's service\n\n  FIELD\ngetFields         Show selected fields from an id\n\n...\n...\n...\n\n\nUsage:\n  pm [mainAction] [--mandatory-argument value] {--optional-argument value}\n\n\nmainAction list:\n\nsetMasterKey\ngetUsers\ncreateUser\ndeleteUser\ngetServices \ncreateService\ndeleteService\ngetIds\ncreateId\ndeleteId\ngetFields\n\n\narguments list\n--key\n--username\n--service-name\n--id-name\n--id-email\n--id-username\n--id-password\n--id-description\n--id-all\n\n\nAvailable arguments for each action:\nsetMasterKey --key abc123\n\ngetUsers\n\ncreateUser --username StringManolo\n\ndeleteUser --username StringManolo\n\ngetServices --username StringManolo\n\ncreateService --username StringManolo --service-name gmail\n\ndeleteService --username StringManolo --service-name gmail\n\ngetIds --username StringManolo --service-name gmail \n\ncreateId --username StringManolo --service-name gmail --id-name 'dev account' --id-email 'stringmanolo@gmail.com' --id-password 'abc123456' --id-description 'Gmail account for development'\n\ndeleteId --username StringManolo --service-name gmail --id-name 'dev account'\n\ngetFields --username StringManolo --service-name gmail --id-name 'dev account' --id-password true\n\n\nRemember to use single quotes ' for values that have spaces or may end or modify the shell input like: createUser --username 'My Name Is ;Jhon' \n\n");
-                process.exit();
+                exit("");
         }
     }
     return cli;

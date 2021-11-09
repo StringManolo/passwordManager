@@ -187,6 +187,11 @@ const ask = (question: string): string => {
   return input();
 }
 
+const exit = (output: string) => {
+  console.log(output);
+  process.exit();
+}
+
 /* PROGRAM FUNCTIONS */
 const createDatabase = (dbPath: string) => {
   if (!fs.existsSync(dbPath)) {
@@ -688,8 +693,12 @@ const decryptDatabase = (jsonPath: string, key: string) => {
     }
 
     (async () => {
+      try {
       // @ts-ignore
       const aux = await decrypt(`${data.iv}:${data.users}`, key);
+      } catch (err) {
+        exit("Master Key is wrong"); 
+      }
       // @ts-ignore
       data.users = JSON.parse(aux);
       if (data?.config?.useMasterKey) {
@@ -747,8 +756,7 @@ const decryptEncryptAtStart = (cli: Cli) => {
     const data = getData(JSON_PATH);
     if (typeof data?.users === "string") { /* Database is encrypted */
       if (cli.setMasterKey) { // Do not encrypt again
-        console.log("Database is already encrypted");
-        process.exit();
+        exit("Database is already encrypted");
       }
 
       if (data?.config?.useMasterKey) { /* Database config confirm db is encrypted */
@@ -1115,7 +1123,7 @@ getFields --username StringManolo --service-name gmail --id-name 'dev account' -
 Remember to use single quotes ' for values that have spaces or may end or modify the shell input like: createUser --username 'My Name Is ;Jhon' 
 
 `);
-        process.exit(); 
+        exit(""); 
     }
   }
   return cli;
