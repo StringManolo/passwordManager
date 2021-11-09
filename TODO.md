@@ -1,4 +1,5 @@
 + Hash Paswords ? ❌
++ Add instructions in README.md ❌
 + Handle async errors ❌
 + Do not encrypt database again if already encrypted ✅
 + ChangeKey option ❌
