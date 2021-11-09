@@ -1,4 +1,7 @@
 + Hash Paswords ? ❌
++ Handle async errors ❌
++ Do not encrypt database again if already encrypted ❌
++ ChangeKey option ❌
 + Add expectedTest to users field (to detect bad decryption and avoid db update) ❌
 + Fix all @ts-ignore ❌
 + Add perUserKey ❌

@@ -191,7 +191,7 @@ const ask = (question: string): string => {
 const createDatabase = (dbPath: string) => {
   if (!fs.existsSync(dbPath)) {
     const db: Database = {
-      users: [],
+      users: [], 
       masterKey: "",
       masterTestKey: "jdjdusjdjddj",
       expectedTest: "key is fine",
@@ -609,23 +609,42 @@ const encrypt = (text: string, key: string) => {
   });
 }
 
-
 const decrypt = (text: string, key: string) => {
   return new Promise<string>( (resolve, reject) => {
-    const algorithm = "aes-192-cbc";
-    crypto.scrypt(key, "salt", 24, (err, key) => {
-      if (err) {
+    (async () => {
+      /*
+      let canDecrypt;
+      try {
+        canDecrypt = await testDecryptionKey(JSON_PATH, key);
+      } catch (err) {
         reject(err);
       }
+    
+      if (!canDecrypt) {
+	console.log("Key is wrong");
+        reject("false");
+      }
+      */
+
+      const algorithm = "aes-192-cbc";
+      crypto.scrypt(key, "salt", 24, (err, key) => {
+        if (err) {
+          reject(err);
+        }
       
-      const iv = Buffer.from(text.split(":")[0], "hex");
-      const encryptedText = text.split(":")[1];
-      
-      const decipher = crypto.createDecipheriv(algorithm, key, iv);
-      let decrypted = decipher.update(encryptedText, "hex", "utf8");
-      decrypted += decipher.final("utf8");
-      resolve(decrypted);
-    });
+        const iv = Buffer.from(text.split(":")[0], "hex");
+        const encryptedText = text.split(":")[1];
+  
+	const decipher = crypto.createDecipheriv(algorithm, key, iv);
+        let decrypted = decipher.update(encryptedText, "hex", "utf8");
+	try {
+          decrypted += decipher.final("utf8");
+	} catch(err) {
+          reject(err);
+	}
+        resolve(decrypted);
+      });
+    })();
   });
 }
 
@@ -635,6 +654,13 @@ const encryptDatabase = (jsonPath: string, key: string) => {
     if (!data || !data?.users) {
       reject("Database not found");
     }
+
+    /*
+    if (typeof data?.users === "string") {
+      console.log("Database already encrypted");
+      reject("Database already encrypted");
+    }
+    */
 
     (async () => {
       // @ts-ignore

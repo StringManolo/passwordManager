@@ -529,18 +529,29 @@ var encrypt = function (text, key) {
 };
 var decrypt = function (text, key) {
     return new Promise(function (resolve, reject) {
-        var algorithm = "aes-192-cbc";
-        crypto.scrypt(key, "salt", 24, function (err, key) {
-            if (err) {
-                reject(err);
-            }
-            var iv = Buffer.from(text.split(":")[0], "hex");
-            var encryptedText = text.split(":")[1];
-            var decipher = crypto.createDecipheriv(algorithm, key, iv);
-            var decrypted = decipher.update(encryptedText, "hex", "utf8");
-            decrypted += decipher.final("utf8");
-            resolve(decrypted);
-        });
+        (function () { return __awaiter(void 0, void 0, void 0, function () {
+            var algorithm;
+            return __generator(this, function (_a) {
+                algorithm = "aes-192-cbc";
+                crypto.scrypt(key, "salt", 24, function (err, key) {
+                    if (err) {
+                        reject(err);
+                    }
+                    var iv = Buffer.from(text.split(":")[0], "hex");
+                    var encryptedText = text.split(":")[1];
+                    var decipher = crypto.createDecipheriv(algorithm, key, iv);
+                    var decrypted = decipher.update(encryptedText, "hex", "utf8");
+                    try {
+                        decrypted += decipher.final("utf8");
+                    }
+                    catch (err) {
+                        reject(err);
+                    }
+                    resolve(decrypted);
+                });
+                return [2 /*return*/];
+            });
+        }); })();
     });
 };
 var encryptDatabase = function (jsonPath, key) {
@@ -549,6 +560,12 @@ var encryptDatabase = function (jsonPath, key) {
         if (!data || !(data === null || data === void 0 ? void 0 : data.users)) {
             reject("Database not found");
         }
+        /*
+        if (typeof data?.users === "string") {
+          console.log("Database already encrypted");
+          reject("Database already encrypted");
+        }
+        */
         (function () { return __awaiter(void 0, void 0, void 0, function () {
             var aux;
             return __generator(this, function (_a) {
