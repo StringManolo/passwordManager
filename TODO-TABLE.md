@@ -1,5 +1,5 @@
 | description | status |
-| ----- | ----- |
+| ----- | :-----: |
 | Hash Paswords ? | ❌ | 
 | Add expectedTest to users field (to detect bad decryption and avoid db update) | ❌ |
 | Fix all @ts-ignore | ❌ |
@@ -31,6 +31,7 @@
 | Change (generate random) expectedTest to improve bruteforce attacks resistance | ❌ |
 | Let use chose encryption algorythm (maybe asymmetric and add public key to db field) | ❌ |
 | Add project to apt-get/npm/termux/aur repositories | ❌ |
-| FUTURE (port to mongoDB/postgresql) and improve performance | ❌ |
+| FUTURE (port to mongoDB/postgresql) and improve performance | ❌ |  
+  
 
-+ placeholder ✅ ❌ 
+| placeholder | ✅ ❌ |
