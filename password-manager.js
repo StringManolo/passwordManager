@@ -670,6 +670,10 @@ var decryptEncryptAtStart = function (cli) {
                     case 0:
                         data = getData(JSON_PATH);
                         if (!(typeof (data === null || data === void 0 ? void 0 : data.users) === "string")) return [3 /*break*/, 3];
+                        if (cli.setMasterKey) { // Do not encrypt again
+                            console.log("Database is already encrypted");
+                            process.exit();
+                        }
                         if (!((_a = data === null || data === void 0 ? void 0 : data.config) === null || _a === void 0 ? void 0 : _a.useMasterKey)) return [3 /*break*/, 2];
                         if (!((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.key)) { // db is encrypted but key for decryption is not provided.
                             if (!(cli === null || cli === void 0 ? void 0 : cli.userData)) { // if userData not exists

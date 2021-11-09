@@ -746,6 +746,11 @@ const decryptEncryptAtStart = (cli: Cli) => {
   (async () => {
     const data = getData(JSON_PATH);
     if (typeof data?.users === "string") { /* Database is encrypted */
+      if (cli.setMasterKey) { // Do not encrypt again
+        console.log("Database is already encrypted");
+        process.exit();
+      }
+
       if (data?.config?.useMasterKey) { /* Database config confirm db is encrypted */
         if (!cli?.userData?.key) { // db is encrypted but key for decryption is not provided.
           if (!cli?.userData) { // if userData not exists
