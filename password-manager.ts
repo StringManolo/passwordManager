@@ -57,6 +57,7 @@ interface Database {
   users?: DatabaseUsers[],
 
   masterKey?: string,
+  iv?: string,
   masterTestKey?: string,
   expectedTest?: string,
 
@@ -161,7 +162,30 @@ const createFileOverwrite = (filename: string, data: string) => {
   fd.close();
 }
 
+const output = (text: string) => {
+  const fd = open("/dev/stdout", "w");
+  fd.puts(text);
+  fd.close();
+}
 
+const input = (): string => {
+  let rtnval = "";
+  let buffer = Buffer.alloc ? Buffer.alloc(1) : new Buffer(1);
+  for(;;) {
+    fs.readSync(0, buffer, 0, 1, null);
+    if(buffer[0] === 10) {
+      break;
+    } else if(buffer[0] !== 13) {
+      rtnval += new String(buffer);
+    }
+  }
+  return rtnval;
+}
+
+const ask = (question: string): string => {
+  output(question);
+  return input();
+}
 
 /* PROGRAM FUNCTIONS */
 const createDatabase = (dbPath: string) => {
@@ -171,6 +195,7 @@ const createDatabase = (dbPath: string) => {
       masterKey: "",
       masterTestKey: "jdjdusjdjddj",
       expectedTest: "key is fine",
+      iv: "Not Encrypted",
       config: {
         useMasterKey: false,
         usePerUserKey: false
@@ -183,7 +208,10 @@ const createDatabase = (dbPath: string) => {
 
 const updateDatabase = (dbPath: string, db: Database) => {
   if (fs.existsSync(dbPath)) {
-    createFileOverwrite(dbPath, JSON.stringify(db, null, 2)); 
+    createFileOverwrite(dbPath, JSON.stringify(db, null, 2));
+    console.log(`DATABASE UPDATED TO:
+${JSON.stringify(db, null, 2)}
+`);
   } else {
     createDatabase(dbPath);
     updateDatabase(dbPath, db); // try again after create the database
@@ -224,7 +252,7 @@ const getUsers = (jsonPath: string) => {
 
 const showUsers = (jsonPath: string) => {
   const users = getUsers(jsonPath);
-  if (!users) {
+  if (!users || typeof users === "string") {
     console.log("No users to show");
     return undefined;
   }
@@ -601,7 +629,60 @@ const decrypt = (text: string, key: string) => {
   });
 }
 
+const encryptDatabase = (jsonPath: string, key: string) => {
+  return new Promise<boolean>( (resolve, reject) => {
+    let data = getData(jsonPath);
+    if (!data || !data?.users) {
+      reject("Database not found");
+    }
 
+    (async () => {
+      // @ts-ignore
+      const aux = await encrypt(JSON.stringify(data.users), key);
+      // @ts-ignore
+      data.iv = aux.split(":")[0];
+      // @ts-ignore
+      data.users = aux.split(":")[1];
+      if (data?.config) {
+        data.config.useMasterKey = true;
+      } 
+console.log("Database encrypted");
+      // @ts-ignore
+      updateDatabase(jsonPath, data);
+      resolve(true);
+    })();
+  });
+}
+
+const decryptDatabase = (jsonPath: string, key: string) => {
+  return new Promise<boolean>( (resolve, reject) => {
+    let data = getData(jsonPath);
+    if (!data || !data?.users) {
+      reject("Database not found");
+    }
+
+    (async () => {
+      // @ts-ignore
+      const aux = await decrypt(`${data.iv}:${data.users}`, key);
+      // @ts-ignore
+      data.users = JSON.parse(aux);
+      if (data?.config?.useMasterKey) {
+        data.config.useMasterKey = false;
+      }
+
+      if (data?.iv) {
+        data.iv = "Not Encrypted";
+      }
+console.log("Database decrypted");
+// TODO: Check if key used was right before update the database. NEED to add a check field into users array
+      // @ts-ignore
+      updateDatabase(jsonPath, data);
+      resolve(true);
+    })();
+  });
+}
+
+// TODO: masterKey should be private in prod. Here is clear for development/debug purpouses only. IV should be public. 
 const setMasterKey = (jsonPath: string, key: string) => {
   const data = getData(jsonPath);
 
@@ -610,8 +691,6 @@ const setMasterKey = (jsonPath: string, key: string) => {
   }
 
   data.masterKey = key; // The key is visible only for debug/development will be removed in prod.
-  // @ts-ignore
-  data.config.useMasterKey = true;
 
   // cipher the expected test
   (async () => {
@@ -625,11 +704,57 @@ const setMasterKey = (jsonPath: string, key: string) => {
       return undefined;
     } 
 
-    updateDatabase(jsonPath, data);
+    // encrypt database using key
+    encryptDatabase(jsonPath, key);
+    // updateDatabase(jsonPath, data); encryptDatabase already updates
     return undefined;
   })();
 
   return undefined;
+}
+
+/* decrypt/encrypt database if key is provided */
+const decryptEncryptAtStart = (cli: Cli) => {
+  // TODO: Change <any> for an interface
+  return  new Promise<any>( (resolve) => {
+  (async () => {
+    const data = getData(JSON_PATH);
+    if (typeof data?.users === "string") { /* Database is encrypted */
+      if (data?.config?.useMasterKey) { /* Database config confirm db is encrypted */
+        if (!cli?.userData?.key) { // db is encrypted but key for decryption is not provided.
+          if (!cli?.userData) { // if userData not exists
+          cli.userData = {} as any; // create userData before defininf key field
+          }
+          if (cli?.userData) {
+            cli.userData.key = ask("The database is encrypted using masterKey. Please provide master key\n-> "); // prompt user for key
+          }
+        }
+        if (cli?.userData?.key) {
+          await decryptDatabase(JSON_PATH, cli.userData.key); // decrypt database with key
+	  resolve([ false, data.config.useMasterKey, cli.userData.key]);
+        }
+      }
+    } else { /* database is not encrypted */
+      if (Array.isArray(data?.users) && data?.config?.useMasterKey) { /* if there is data without encryption AND database config says to use encryption */
+        if (!cli?.userData) {
+          cli.userData = {} as any;
+        }
+
+        if (!cli?.userData?.key) {
+          if (cli?.userData) {
+            cli.userData.key = ask("The database is not encrypted using masterKey. Please provide the master key for encryption\n-> ");
+	  }
+        }
+
+        if (cli?.userData?.key) {
+          await encryptDatabase(JSON_PATH, cli.userData.key); // encrypt database
+          resolve([true]);
+        }
+      }
+    }
+    resolve([false]);
+  })();
+  });
 }
 
 /*
@@ -859,9 +984,12 @@ const parseArguments = (): Cli => {
 
       case "key":
       case "--key":
-        if (cli?.userData) {
-          cli.userData.key = next;
-        }
+        if (!cli?.userData) {
+	  cli.userData = {} as any;
+	}
+        
+	// @ts-ignore
+	cli.userData.key = next;
       break;
       // case "interactive input: ? maybe
 
@@ -980,42 +1108,86 @@ const JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
 
 
 
-
-
 /* PROGRAM INSTRUCTIONS */
-createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
-createDatabase(JSON_PATH); // create json file (database)
-const cli = parseArguments(); // parse arguments from cli
+(async () => {
+  createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
+  createDatabase(JSON_PATH); // create json file (database)
+  const cli = parseArguments(); // parse arguments from cli
 
-// TODO: ask for masterkey before decrypting
+  /* decrypt/encrypt database if key is provided */
+  const [databaseEncrypted, encryptionEnabled, encryptionKey] = await decryptEncryptAtStart(cli);
 
+  // TODO: do not call some of these functions if database encrypted
+  if (cli?.setMasterKey && cli?.userData?.key) {
+    setMasterKey(JSON_PATH, cli.userData.key);
+  } else if (cli?.getUsers) {
+    if (databaseEncrypted === true) {
+      console.log("Database is encrypted");
+    } else {
+      console.log("Show Users Called before encryption/decryption resolved?");
+      showUsers(JSON_PATH);
+    }
+  } else if (cli?.createUser && cli.userData) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      createUser(JSON_PATH, cli.userData);
+    }
+  } else if (cli?.deleteUser && cli?.userData?.username) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      deleteUser(JSON_PATH, cli.userData.username);
+    }
+  } else if (cli?.getServices && cli?.userData?.username) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      showServices(JSON_PATH, cli.userData.username);
+    }
+  } else if (cli?.createService && cli?.userData) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      createService(JSON_PATH, cli.userData);
+    }
+  } else if (cli?.deleteService && cli?.userData?.username && cli.userData?.serviceName) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      deleteService(JSON_PATH, cli.userData);
+    }
+  } else if (cli?.getIds && cli?.userData?.username && cli.userData?.serviceName) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
+    }
+  } else if (cli?.createId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      createId(JSON_PATH, cli.userData);
+    }
+  } else if (cli?.deleteId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      deleteId(JSON_PATH, cli.userData);
+    }
+  } else if (cli?.getFields && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
+    if (databaseEncrypted) {
+      console.log("Database is encrypted");
+    } else {
+      showIdFields(JSON_PATH, cli.userData);
+    }
+  } else {
+    // detect what command is used
+    // showUsage(commandName);
+  }
 
-if (cli?.setMasterKey && cli?.userData?.key) {
-  setMasterKey(JSON_PATH, cli.userData.key);
-} else if (cli?.getUsers) { 
-  showUsers(JSON_PATH);
-} else if (cli?.createUser && cli.userData) {
-  createUser(JSON_PATH, cli.userData);
-} else if (cli?.deleteUser && cli?.userData?.username) {
-  deleteUser(JSON_PATH, cli.userData.username);
-} else if (cli?.getServices && cli?.userData?.username) {
-  showServices(JSON_PATH, cli.userData.username);
-} else if (cli?.createService && cli?.userData) {
-  createService(JSON_PATH, cli.userData);
-} else if (cli?.deleteService && cli?.userData?.username && cli.userData?.serviceName) {
-  deleteService(JSON_PATH, cli.userData);
-} else if (cli?.getIds && cli?.userData?.username && cli.userData?.serviceName) {
-  showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
-} else if (cli?.createId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
-  createId(JSON_PATH, cli.userData);
-} else if (cli?.deleteId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
-  deleteId(JSON_PATH, cli.userData);
-} else if (cli?.getFields && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
-  showIdFields(JSON_PATH, cli.userData);
-} else {
-  // detect what command is used
-  // showUsage(commandName);
-}
-
-
+  if (!databaseEncrypted && encryptionEnabled && encryptionKey) {
+    console.log("Encrypt database again after usage");
+  }
+})();
 

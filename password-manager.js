@@ -55,7 +55,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
 Object.defineProperty(exports, "__esModule", { value: true });
 // Show Services || Create Services || Delete Services
 // Show ID || Create ID || Delete ID
@@ -112,6 +111,29 @@ var createFileOverwrite = function (filename, data) {
     fd.puts(data);
     fd.close();
 };
+var output = function (text) {
+    var fd = open("/dev/stdout", "w");
+    fd.puts(text);
+    fd.close();
+};
+var input = function () {
+    var rtnval = "";
+    var buffer = Buffer.alloc ? Buffer.alloc(1) : new Buffer(1);
+    for (;;) {
+        fs.readSync(0, buffer, 0, 1, null);
+        if (buffer[0] === 10) {
+            break;
+        }
+        else if (buffer[0] !== 13) {
+            rtnval += new String(buffer);
+        }
+    }
+    return rtnval;
+};
+var ask = function (question) {
+    output(question);
+    return input();
+};
 /* PROGRAM FUNCTIONS */
 var createDatabase = function (dbPath) {
     if (!fs.existsSync(dbPath)) {
@@ -120,6 +142,7 @@ var createDatabase = function (dbPath) {
             masterKey: "",
             masterTestKey: "jdjdusjdjddj",
             expectedTest: "key is fine",
+            iv: "Not Encrypted",
             config: {
                 useMasterKey: false,
                 usePerUserKey: false
@@ -131,6 +154,7 @@ var createDatabase = function (dbPath) {
 var updateDatabase = function (dbPath, db) {
     if (fs.existsSync(dbPath)) {
         createFileOverwrite(dbPath, JSON.stringify(db, null, 2));
+        console.log("DATABASE UPDATED TO:\n" + JSON.stringify(db, null, 2) + "\n");
     }
     else {
         createDatabase(dbPath);
@@ -169,7 +193,7 @@ var getUsers = function (jsonPath) {
 };
 var showUsers = function (jsonPath) {
     var users = getUsers(jsonPath);
-    if (!users) {
+    if (!users || typeof users === "string") {
         console.log("No users to show");
         return undefined;
     }
@@ -517,14 +541,76 @@ var decrypt = function (text, key) {
         });
     });
 };
+var encryptDatabase = function (jsonPath, key) {
+    return new Promise(function (resolve, reject) {
+        var data = getData(jsonPath);
+        if (!data || !(data === null || data === void 0 ? void 0 : data.users)) {
+            reject("Database not found");
+        }
+        (function () { return __awaiter(void 0, void 0, void 0, function () {
+            var aux;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, encrypt(JSON.stringify(data.users), key)];
+                    case 1:
+                        aux = _a.sent();
+                        // @ts-ignore
+                        data.iv = aux.split(":")[0];
+                        // @ts-ignore
+                        data.users = aux.split(":")[1];
+                        if (data === null || data === void 0 ? void 0 : data.config) {
+                            data.config.useMasterKey = true;
+                        }
+                        console.log("Database encrypted");
+                        // @ts-ignore
+                        updateDatabase(jsonPath, data);
+                        resolve(true);
+                        return [2 /*return*/];
+                }
+            });
+        }); })();
+    });
+};
+var decryptDatabase = function (jsonPath, key) {
+    return new Promise(function (resolve, reject) {
+        var data = getData(jsonPath);
+        if (!data || !(data === null || data === void 0 ? void 0 : data.users)) {
+            reject("Database not found");
+        }
+        (function () { return __awaiter(void 0, void 0, void 0, function () {
+            var aux;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, decrypt(data.iv + ":" + data.users, key)];
+                    case 1:
+                        aux = _b.sent();
+                        // @ts-ignore
+                        data.users = JSON.parse(aux);
+                        if ((_a = data === null || data === void 0 ? void 0 : data.config) === null || _a === void 0 ? void 0 : _a.useMasterKey) {
+                            data.config.useMasterKey = false;
+                        }
+                        if (data === null || data === void 0 ? void 0 : data.iv) {
+                            data.iv = "Not Encrypted";
+                        }
+                        console.log("Database decrypted");
+                        // TODO: Check if key used was right before update the database. NEED to add a check field into users array
+                        // @ts-ignore
+                        updateDatabase(jsonPath, data);
+                        resolve(true);
+                        return [2 /*return*/];
+                }
+            });
+        }); })();
+    });
+};
+// TODO: masterKey should be private in prod. Here is clear for development/debug purpouses only. IV should be public. 
 var setMasterKey = function (jsonPath, key) {
     var data = getData(jsonPath);
     if (!data) {
         return undefined;
     }
     data.masterKey = key; // The key is visible only for debug/development will be removed in prod.
-    // @ts-ignore
-    data.config.useMasterKey = true;
     // cipher the expected test
     (function () { return __awaiter(void 0, void 0, void 0, function () {
         var _a, decrypted;
@@ -544,12 +630,66 @@ var setMasterKey = function (jsonPath, key) {
                         console.log("expectedTest \"" + data.expectedTest + "\" not matching decrypted \"" + decrypted + "\". This means the masterKey is wrong or the cipher suite has a bug");
                         return [2 /*return*/, undefined];
                     }
-                    updateDatabase(jsonPath, data);
+                    // encrypt database using key
+                    encryptDatabase(jsonPath, key);
+                    // updateDatabase(jsonPath, data); encryptDatabase already updates
                     return [2 /*return*/, undefined];
             }
         });
     }); })();
     return undefined;
+};
+/* decrypt/encrypt database if key is provided */
+var decryptEncryptAtStart = function (cli) {
+    // TODO: Change <any> for an interface
+    return new Promise(function (resolve) {
+        (function () { return __awaiter(void 0, void 0, void 0, function () {
+            var data;
+            var _a, _b, _c, _d, _e, _f;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
+                    case 0:
+                        data = getData(JSON_PATH);
+                        if (!(typeof (data === null || data === void 0 ? void 0 : data.users) === "string")) return [3 /*break*/, 3];
+                        if (!((_a = data === null || data === void 0 ? void 0 : data.config) === null || _a === void 0 ? void 0 : _a.useMasterKey)) return [3 /*break*/, 2];
+                        if (!((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.key)) { // db is encrypted but key for decryption is not provided.
+                            if (!(cli === null || cli === void 0 ? void 0 : cli.userData)) { // if userData not exists
+                                cli.userData = {}; // create userData before defininf key field
+                            }
+                            if (cli === null || cli === void 0 ? void 0 : cli.userData) {
+                                cli.userData.key = ask("The database is encrypted using masterKey. Please provide master key\n-> "); // prompt user for key
+                            }
+                        }
+                        if (!((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.key)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, decryptDatabase(JSON_PATH, cli.userData.key)];
+                    case 1:
+                        _g.sent(); // decrypt database with key
+                        resolve([false, data.config.useMasterKey, cli.userData.key]);
+                        _g.label = 2;
+                    case 2: return [3 /*break*/, 5];
+                    case 3:
+                        if (!(Array.isArray(data === null || data === void 0 ? void 0 : data.users) && ((_d = data === null || data === void 0 ? void 0 : data.config) === null || _d === void 0 ? void 0 : _d.useMasterKey))) return [3 /*break*/, 5];
+                        if (!(cli === null || cli === void 0 ? void 0 : cli.userData)) {
+                            cli.userData = {};
+                        }
+                        if (!((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.key)) {
+                            if (cli === null || cli === void 0 ? void 0 : cli.userData) {
+                                cli.userData.key = ask("The database is not encrypted using masterKey. Please provide the master key for encryption\n-> ");
+                            }
+                        }
+                        if (!((_f = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _f === void 0 ? void 0 : _f.key)) return [3 /*break*/, 5];
+                        return [4 /*yield*/, encryptDatabase(JSON_PATH, cli.userData.key)];
+                    case 4:
+                        _g.sent(); // encrypt database
+                        resolve([true]);
+                        _g.label = 5;
+                    case 5:
+                        resolve([false]);
+                        return [2 /*return*/];
+                }
+            });
+        }); })();
+    });
 };
 /*
 const db = {
@@ -757,9 +897,11 @@ var parseArguments = function () {
                 break;
             case "key":
             case "--key":
-                if (cli === null || cli === void 0 ? void 0 : cli.userData) {
-                    cli.userData.key = next;
+                if (!(cli === null || cli === void 0 ? void 0 : cli.userData)) {
+                    cli.userData = {};
                 }
+                // @ts-ignore
+                cli.userData.key = next;
                 break;
             // case "interactive input: ? maybe
             case "h":
@@ -785,44 +927,111 @@ var PATH = foundTermux() ? "/data/data/com.termux/files/usr/bin" : "/bin";
 var PROGRAM_FOLDER_PATH = PATH + "/.password-manager";
 var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
 /* PROGRAM INSTRUCTIONS */
-createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
-createDatabase(JSON_PATH); // create json file (database)
-var cli = parseArguments(); // parse arguments from cli
-// TODO: ask for masterkey before decrypting
-if ((cli === null || cli === void 0 ? void 0 : cli.setMasterKey) && ((_a = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _a === void 0 ? void 0 : _a.key)) {
-    setMasterKey(JSON_PATH, cli.userData.key);
-}
-else if (cli === null || cli === void 0 ? void 0 : cli.getUsers) {
-    showUsers(JSON_PATH);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.createUser) && cli.userData) {
-    createUser(JSON_PATH, cli.userData);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.deleteUser) && ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.username)) {
-    deleteUser(JSON_PATH, cli.userData.username);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.getServices) && ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.username)) {
-    showServices(JSON_PATH, cli.userData.username);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.createService) && (cli === null || cli === void 0 ? void 0 : cli.userData)) {
-    createService(JSON_PATH, cli.userData);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.username) && ((_e = cli.userData) === null || _e === void 0 ? void 0 : _e.serviceName)) {
-    deleteService(JSON_PATH, cli.userData);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.getIds) && ((_f = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _f === void 0 ? void 0 : _f.username) && ((_g = cli.userData) === null || _g === void 0 ? void 0 : _g.serviceName)) {
-    showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_h = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _h === void 0 ? void 0 : _h.username) && ((_j = cli.userData) === null || _j === void 0 ? void 0 : _j.serviceName) && ((_k = cli.userData) === null || _k === void 0 ? void 0 : _k.idName)) {
-    createId(JSON_PATH, cli.userData);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.deleteId) && ((_l = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _l === void 0 ? void 0 : _l.username) && ((_m = cli.userData) === null || _m === void 0 ? void 0 : _m.serviceName) && ((_o = cli.userData) === null || _o === void 0 ? void 0 : _o.idName)) {
-    deleteId(JSON_PATH, cli.userData);
-}
-else if ((cli === null || cli === void 0 ? void 0 : cli.getFields) && ((_p = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _p === void 0 ? void 0 : _p.username) && ((_q = cli.userData) === null || _q === void 0 ? void 0 : _q.serviceName) && ((_r = cli.userData) === null || _r === void 0 ? void 0 : _r.idName)) {
-    showIdFields(JSON_PATH, cli.userData);
-}
-else {
-    // detect what command is used
-    // showUsage(commandName);
-}
+(function () { return __awaiter(void 0, void 0, void 0, function () {
+    var cli, _a, databaseEncrypted, encryptionEnabled, encryptionKey;
+    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
+    return __generator(this, function (_t) {
+        switch (_t.label) {
+            case 0:
+                createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
+                createDatabase(JSON_PATH); // create json file (database)
+                cli = parseArguments();
+                return [4 /*yield*/, decryptEncryptAtStart(cli)];
+            case 1:
+                _a = _t.sent(), databaseEncrypted = _a[0], encryptionEnabled = _a[1], encryptionKey = _a[2];
+                // TODO: do not call some of these functions if database encrypted
+                if ((cli === null || cli === void 0 ? void 0 : cli.setMasterKey) && ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.key)) {
+                    setMasterKey(JSON_PATH, cli.userData.key);
+                }
+                else if (cli === null || cli === void 0 ? void 0 : cli.getUsers) {
+                    if (databaseEncrypted === true) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        console.log("Show Users Called before encryption/decryption resolved?");
+                        showUsers(JSON_PATH);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.createUser) && cli.userData) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        createUser(JSON_PATH, cli.userData);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteUser) && ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.username)) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        deleteUser(JSON_PATH, cli.userData.username);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.getServices) && ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.username)) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        showServices(JSON_PATH, cli.userData.username);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.createService) && (cli === null || cli === void 0 ? void 0 : cli.userData)) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        createService(JSON_PATH, cli.userData);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.username) && ((_f = cli.userData) === null || _f === void 0 ? void 0 : _f.serviceName)) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        deleteService(JSON_PATH, cli.userData);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.getIds) && ((_g = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _g === void 0 ? void 0 : _g.username) && ((_h = cli.userData) === null || _h === void 0 ? void 0 : _h.serviceName)) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_j = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _j === void 0 ? void 0 : _j.username) && ((_k = cli.userData) === null || _k === void 0 ? void 0 : _k.serviceName) && ((_l = cli.userData) === null || _l === void 0 ? void 0 : _l.idName)) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        createId(JSON_PATH, cli.userData);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteId) && ((_m = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _m === void 0 ? void 0 : _m.username) && ((_o = cli.userData) === null || _o === void 0 ? void 0 : _o.serviceName) && ((_p = cli.userData) === null || _p === void 0 ? void 0 : _p.idName)) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        deleteId(JSON_PATH, cli.userData);
+                    }
+                }
+                else if ((cli === null || cli === void 0 ? void 0 : cli.getFields) && ((_q = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _q === void 0 ? void 0 : _q.username) && ((_r = cli.userData) === null || _r === void 0 ? void 0 : _r.serviceName) && ((_s = cli.userData) === null || _s === void 0 ? void 0 : _s.idName)) {
+                    if (databaseEncrypted) {
+                        console.log("Database is encrypted");
+                    }
+                    else {
+                        showIdFields(JSON_PATH, cli.userData);
+                    }
+                }
+                else {
+                    // detect what command is used
+                    // showUsage(commandName);
+                }
+                if (!databaseEncrypted && encryptionEnabled && encryptionKey) {
+                    console.log("Encrypt database again after usage");
+                }
+                return [2 /*return*/];
+        }
+    });
+}); })();
