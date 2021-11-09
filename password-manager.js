@@ -154,7 +154,9 @@ var createDatabase = function (dbPath) {
 var updateDatabase = function (dbPath, db) {
     if (fs.existsSync(dbPath)) {
         createFileOverwrite(dbPath, JSON.stringify(db, null, 2));
-        console.log("DATABASE UPDATED TO:\n" + JSON.stringify(db, null, 2) + "\n");
+        /*    console.log(`DATABASE UPDATED TO:
+        ${JSON.stringify(db, null, 2)}
+        `); */
     }
     else {
         createDatabase(dbPath);
@@ -948,7 +950,6 @@ var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
                         console.log("Database is encrypted");
                     }
                     else {
-                        console.log("Show Users Called before encryption/decryption resolved?");
                         showUsers(JSON_PATH);
                     }
                 }
@@ -1029,7 +1030,7 @@ var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
                     // showUsage(commandName);
                 }
                 if (!databaseEncrypted && encryptionEnabled && encryptionKey) {
-                    console.log("Encrypt database again after usage");
+                    encryptDatabase(JSON_PATH, encryptionKey); // encryption key comes from ask the user the key inside encryptDecrypt function (returned by promise)
                 }
                 return [2 /*return*/];
         }

@@ -209,9 +209,9 @@ const createDatabase = (dbPath: string) => {
 const updateDatabase = (dbPath: string, db: Database) => {
   if (fs.existsSync(dbPath)) {
     createFileOverwrite(dbPath, JSON.stringify(db, null, 2));
-    console.log(`DATABASE UPDATED TO:
+/*    console.log(`DATABASE UPDATED TO:
 ${JSON.stringify(db, null, 2)}
-`);
+`); */
   } else {
     createDatabase(dbPath);
     updateDatabase(dbPath, db); // try again after create the database
@@ -1124,7 +1124,6 @@ const JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
     if (databaseEncrypted === true) {
       console.log("Database is encrypted");
     } else {
-      console.log("Show Users Called before encryption/decryption resolved?");
       showUsers(JSON_PATH);
     }
   } else if (cli?.createUser && cli.userData) {
@@ -1187,7 +1186,7 @@ const JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
   }
 
   if (!databaseEncrypted && encryptionEnabled && encryptionKey) {
-    console.log("Encrypt database again after usage");
+    encryptDatabase(JSON_PATH, encryptionKey); // encryption key comes from ask the user the key inside encryptDecrypt function (returned by promise)
   }
 })();
 
