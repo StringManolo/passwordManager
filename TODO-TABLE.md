@@ -32,6 +32,6 @@
 | Let use chose encryption algorythm (maybe asymmetric and add public key to db field) | ❌ |
 | Add project to apt-get/npm/termux/aur repositories | ❌ |
 | FUTURE (port to mongoDB/postgresql) and improve performance | ❌ |  
-  
-
 | placeholder | ✅ ❌ |
+
+
