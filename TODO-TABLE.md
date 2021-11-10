@@ -1,11 +1,12 @@
 | description | status |
 | ----- | :-----: |
 | Hash Paswords ? | ❌ |
+| Clean and organize source | ❌ |
 | Add instructions in README.md | ❌ |
 | Handle async errors | ❌ |
 | Do not encrypt database again if already encrypted | ✅ |
 | ChangeKey option | ❌ |
-| Add expectedTest to users field (to detect bad decryption and avoid db update) | ❌ |
+| Add expectedTest to users field (to detect bad decryption and avoid db update) | ✅ |
 | Fix all @ts-ignore | ❌ |
 | Add perUserKey | ❌ |
 | Test program works in Linux (only Termux tested at the moment) | ❌ |
@@ -34,6 +35,8 @@
 | Option to manage multiple databases (change db path/make a list of db inside folder) | ❌ |
 | Change (generate random) expectedTest to improve bruteforce attacks resistance | ❌ |
 | Let use chose encryption algorythm (maybe asymmetric and add public key to db field) | ❌ |
+| Add backups | ❌
+| HTTP API | ❌ 
 | Add project to apt-get/npm/termux/aur repositories | ❌ |
 | FUTURE (port to mongoDB/postgresql) and improve performance | ❌ |  
 | placeholder | ✅ ❌ |
