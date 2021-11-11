@@ -14,13 +14,13 @@
 + Update repo ❌ 
 + Add contribution instructions ❌
 + Add interactive mode (no arguments provided for mainActions) ❌
-+ Add verbose argument (-v) ❌
++ Add verbose argument (-v) ✅
 + Add debug argument (-d) ❌
 + Add version argument (--version) ❌
 + Add update argument (--update) ❌
 + Add usage output when any arguments provided ❌
 + Show, edit, remove ID fileds (change field by key?) ❌
-+ Add colored output (--color) setColor (config.coloredOutput = true) ❌
++ Add colored output (--color) setColor (config.coloredOutput = true) ✅
 + Add Windows filesystem support ❌
 + Add reset Database option ❌
 + Add autoinstall script (move pm to path) ❌

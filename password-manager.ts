@@ -84,13 +84,13 @@ interface InputUserData {
 }
 
 interface Cli {
-  setMasterKey?: true | false,
+  setMasterKey?: boolean,
 
-  getUsers?: true | false,
+  getUsers?: boolean,
   createUser?: string,
   deleteUser?: string,
 
-  getServices?: true | false,
+  getServices?: boolean,
   createService?: string,
   deleteService?: string,
 
@@ -98,7 +98,10 @@ interface Cli {
   createId?: string,
   deleteId?: string,
 
-  getFields?: true | false,
+  getFields?: boolean,
+
+  verbose?: boolean,
+  coloredOutput?: boolean,
 
   userData?: InputUserData
 }
@@ -185,6 +188,50 @@ const input = (): string => {
 const ask = (question: string): string => {
   output(question);
   return input();
+}
+
+const getColor = (color: string) => {
+  switch(color) {
+    case "red":
+    case "RED":
+    case "Red":
+      return "\x1b[31m";
+
+    case "yellow":
+    case "YELLOW":
+    case "Yellow":
+      return "\x1b[33m";
+
+    case "blue":
+    case "BLUE":
+    case "Blue":
+      return "\x1b[34m";
+
+    case "green":
+    case "GREEB":
+    case "Green":
+      return "\x1b[32m";
+
+    case "reset":
+    case "RESET":
+    case "Reset":
+    case "none":
+    case "NONE":
+    case "None":
+      return "\x1b[0m";
+
+    default:
+      return "\x1b[0m";
+  }
+}
+
+const verbose = (text: string, enable: boolean | undefined, coloredOutput: boolean | undefined) => {
+  if (enable) {
+    if (coloredOutput) {
+      text = getColor("green") + text + getColor("reset");
+    }
+    console.log(text);
+  }
 }
 
 const exit = (output: string) => {
@@ -1032,6 +1079,18 @@ const parseArguments = (): Cli => {
       break;
       // case "interactive input: ? maybe
 
+      case "-v":
+      case "--verbose":
+        cli.verbose = true;
+      break;
+
+      case "-c":
+      case "--colored":
+      case "--color":
+      case "--colored-output":
+        cli.coloredOutput = true;
+      break;
+
       case "h":
       case "help":
       case "Help":
@@ -1149,82 +1208,100 @@ const JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
 
 /* PROGRAM INSTRUCTIONS */
 (async () => {
-  createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
+  try { // catch permissions error
+    createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
+  } catch(err) { // unable to create folder
+    
+  }
   createDatabase(JSON_PATH); // create json file (database)
   const cli = parseArguments(); // parse arguments from cli
-
+  
   /* decrypt/encrypt database if key is provided */
+  verbose("Database decryption/encryption started", cli?.verbose, cli?.coloredOutput);
   const [databaseEncrypted, encryptionEnabled, encryptionKey] = await decryptEncryptAtStart(cli);
 
-  // TODO: do not call some of these functions if database encrypted
   if (cli?.setMasterKey && cli?.userData?.key) {
+    verbose("Seting MasterKey...", cli?.verbose, cli?.coloredOutput);
     setMasterKey(JSON_PATH, cli.userData.key);
+    verbose("Done", cli?.verbose, cli?.coloredOutput);
   } else if (cli?.getUsers) {
     if (databaseEncrypted === true) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Geting Users...`, cli?.verbose, cli?.coloredOutput);
       showUsers(JSON_PATH);
     }
   } else if (cli?.createUser && cli.userData) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Creating User "${cli.userData?.username}"...`, cli?.verbose, cli?.coloredOutput);
       createUser(JSON_PATH, cli.userData);
     }
   } else if (cli?.deleteUser && cli?.userData?.username) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Deleting user "${cli?.userData.username}"...`, cli?.verbose, cli?.coloredOutput);
       deleteUser(JSON_PATH, cli.userData.username);
     }
   } else if (cli?.getServices && cli?.userData?.username) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Showing Services for "${cli.userData.username}"...`, cli?.verbose, cli?.coloredOutput);
       showServices(JSON_PATH, cli.userData.username);
     }
   } else if (cli?.createService && cli?.userData) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Creating Service for "${cli.userData?.username}...`, cli?.verbose, cli?.coloredOutput);
       createService(JSON_PATH, cli.userData);
     }
   } else if (cli?.deleteService && cli?.userData?.username && cli.userData?.serviceName) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Delete Service for "${cli.userData.username}"...`, cli?.verbose, cli?.coloredOutput);
       deleteService(JSON_PATH, cli.userData);
     }
   } else if (cli?.getIds && cli?.userData?.username && cli.userData?.serviceName) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Showing Ids for "${cli.userData.username}/${cli.userData.serviceName}"...`, cli?.verbose, cli?.coloredOutput);
       showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
     }
   } else if (cli?.createId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Creating Id "${cli.userData.idName}" for "${cli.userData.username}/${cli.userData.serviceName}"...`, cli?.verbose, cli?.coloredOutput);
       createId(JSON_PATH, cli.userData);
     }
   } else if (cli?.deleteId && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Deleting id "${cli.userData.idName}" for ${cli.userData.username}/${cli.userData.serviceName}"...`, cli?.verbose, cli?.coloredOutput);
       deleteId(JSON_PATH, cli.userData);
     }
   } else if (cli?.getFields && cli?.userData?.username && cli.userData?.serviceName && cli.userData?.idName) {
     if (databaseEncrypted) {
       console.log("Database is encrypted");
     } else {
+      verbose(`Geting id fields for "${cli.userData.username}/${cli.userData.serviceName}/${cli.userData.idName}"...`, cli?.verbose, cli?.coloredOutput); 
       showIdFields(JSON_PATH, cli.userData);
     }
   } else {
+    console.log("No mainAction detected or not enought argumentss provided. Use --help to view commands and their mandatory arguments");
     // detect what command is used
     // showUsage(commandName);
   }
 
   if (!databaseEncrypted && encryptionEnabled && encryptionKey) {
+    verbose("Encrypting database before exit...", cli?.verbose, cli?.coloredOutput);
     encryptDatabase(JSON_PATH, encryptionKey); // encryption key comes from ask the user the key inside encryptDecrypt function (returned by promise)
   }
 })();

@@ -134,6 +134,43 @@ var ask = function (question) {
     output(question);
     return input();
 };
+var getColor = function (color) {
+    switch (color) {
+        case "red":
+        case "RED":
+        case "Red":
+            return "\x1b[31m";
+        case "yellow":
+        case "YELLOW":
+        case "Yellow":
+            return "\x1b[33m";
+        case "blue":
+        case "BLUE":
+        case "Blue":
+            return "\x1b[34m";
+        case "green":
+        case "GREEB":
+        case "Green":
+            return "\x1b[32m";
+        case "reset":
+        case "RESET":
+        case "Reset":
+        case "none":
+        case "NONE":
+        case "None":
+            return "\x1b[0m";
+        default:
+            return "\x1b[0m";
+    }
+};
+var verbose = function (text, enable, coloredOutput) {
+    if (enable) {
+        if (coloredOutput) {
+            text = getColor("green") + text + getColor("reset");
+        }
+        console.log(text);
+    }
+};
 var exit = function (output) {
     console.log(output);
     process.exit();
@@ -938,6 +975,16 @@ var parseArguments = function () {
                 cli.userData.key = next;
                 break;
             // case "interactive input: ? maybe
+            case "-v":
+            case "--verbose":
+                cli.verbose = true;
+                break;
+            case "-c":
+            case "--colored":
+            case "--color":
+            case "--colored-output":
+                cli.coloredOutput = true;
+                break;
             case "h":
             case "help":
             case "Help":
@@ -963,25 +1010,33 @@ var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
 /* PROGRAM INSTRUCTIONS */
 (function () { return __awaiter(void 0, void 0, void 0, function () {
     var cli, _a, databaseEncrypted, encryptionEnabled, encryptionKey;
-    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
-    return __generator(this, function (_t) {
-        switch (_t.label) {
+    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
+    return __generator(this, function (_v) {
+        switch (_v.label) {
             case 0:
-                createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
+                try { // catch permissions error
+                    createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
+                }
+                catch (err) { // unable to create folder
+                }
                 createDatabase(JSON_PATH); // create json file (database)
                 cli = parseArguments();
+                /* decrypt/encrypt database if key is provided */
+                verbose("Database decryption/encryption started", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                 return [4 /*yield*/, decryptEncryptAtStart(cli)];
             case 1:
-                _a = _t.sent(), databaseEncrypted = _a[0], encryptionEnabled = _a[1], encryptionKey = _a[2];
-                // TODO: do not call some of these functions if database encrypted
+                _a = _v.sent(), databaseEncrypted = _a[0], encryptionEnabled = _a[1], encryptionKey = _a[2];
                 if ((cli === null || cli === void 0 ? void 0 : cli.setMasterKey) && ((_b = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _b === void 0 ? void 0 : _b.key)) {
+                    verbose("Seting MasterKey...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                     setMasterKey(JSON_PATH, cli.userData.key);
+                    verbose("Done", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                 }
                 else if (cli === null || cli === void 0 ? void 0 : cli.getUsers) {
                     if (databaseEncrypted === true) {
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Geting Users...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         showUsers(JSON_PATH);
                     }
                 }
@@ -990,22 +1045,25 @@ var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Creating User \"" + ((_c = cli.userData) === null || _c === void 0 ? void 0 : _c.username) + "\"...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         createUser(JSON_PATH, cli.userData);
                     }
                 }
-                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteUser) && ((_c = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _c === void 0 ? void 0 : _c.username)) {
+                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteUser) && ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.username)) {
                     if (databaseEncrypted) {
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Deleting user \"" + (cli === null || cli === void 0 ? void 0 : cli.userData.username) + "\"...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         deleteUser(JSON_PATH, cli.userData.username);
                     }
                 }
-                else if ((cli === null || cli === void 0 ? void 0 : cli.getServices) && ((_d = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _d === void 0 ? void 0 : _d.username)) {
+                else if ((cli === null || cli === void 0 ? void 0 : cli.getServices) && ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.username)) {
                     if (databaseEncrypted) {
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Showing Services for \"" + cli.userData.username + "\"...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         showServices(JSON_PATH, cli.userData.username);
                     }
                 }
@@ -1014,54 +1072,62 @@ var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Creating Service for \"" + ((_f = cli.userData) === null || _f === void 0 ? void 0 : _f.username) + "...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         createService(JSON_PATH, cli.userData);
                     }
                 }
-                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_e = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _e === void 0 ? void 0 : _e.username) && ((_f = cli.userData) === null || _f === void 0 ? void 0 : _f.serviceName)) {
+                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteService) && ((_g = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _g === void 0 ? void 0 : _g.username) && ((_h = cli.userData) === null || _h === void 0 ? void 0 : _h.serviceName)) {
                     if (databaseEncrypted) {
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Delete Service for \"" + cli.userData.username + "\"...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         deleteService(JSON_PATH, cli.userData);
                     }
                 }
-                else if ((cli === null || cli === void 0 ? void 0 : cli.getIds) && ((_g = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _g === void 0 ? void 0 : _g.username) && ((_h = cli.userData) === null || _h === void 0 ? void 0 : _h.serviceName)) {
+                else if ((cli === null || cli === void 0 ? void 0 : cli.getIds) && ((_j = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _j === void 0 ? void 0 : _j.username) && ((_k = cli.userData) === null || _k === void 0 ? void 0 : _k.serviceName)) {
                     if (databaseEncrypted) {
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Showing Ids for \"" + cli.userData.username + "/" + cli.userData.serviceName + "\"...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         showIds(JSON_PATH, cli.userData.username, cli.userData.serviceName);
                     }
                 }
-                else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_j = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _j === void 0 ? void 0 : _j.username) && ((_k = cli.userData) === null || _k === void 0 ? void 0 : _k.serviceName) && ((_l = cli.userData) === null || _l === void 0 ? void 0 : _l.idName)) {
+                else if ((cli === null || cli === void 0 ? void 0 : cli.createId) && ((_l = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _l === void 0 ? void 0 : _l.username) && ((_m = cli.userData) === null || _m === void 0 ? void 0 : _m.serviceName) && ((_o = cli.userData) === null || _o === void 0 ? void 0 : _o.idName)) {
                     if (databaseEncrypted) {
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Creating Id \"" + cli.userData.idName + "\" for \"" + cli.userData.username + "/" + cli.userData.serviceName + "\"...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         createId(JSON_PATH, cli.userData);
                     }
                 }
-                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteId) && ((_m = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _m === void 0 ? void 0 : _m.username) && ((_o = cli.userData) === null || _o === void 0 ? void 0 : _o.serviceName) && ((_p = cli.userData) === null || _p === void 0 ? void 0 : _p.idName)) {
+                else if ((cli === null || cli === void 0 ? void 0 : cli.deleteId) && ((_p = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _p === void 0 ? void 0 : _p.username) && ((_q = cli.userData) === null || _q === void 0 ? void 0 : _q.serviceName) && ((_r = cli.userData) === null || _r === void 0 ? void 0 : _r.idName)) {
                     if (databaseEncrypted) {
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Deleting id \"" + cli.userData.idName + "\" for " + cli.userData.username + "/" + cli.userData.serviceName + "\"...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         deleteId(JSON_PATH, cli.userData);
                     }
                 }
-                else if ((cli === null || cli === void 0 ? void 0 : cli.getFields) && ((_q = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _q === void 0 ? void 0 : _q.username) && ((_r = cli.userData) === null || _r === void 0 ? void 0 : _r.serviceName) && ((_s = cli.userData) === null || _s === void 0 ? void 0 : _s.idName)) {
+                else if ((cli === null || cli === void 0 ? void 0 : cli.getFields) && ((_s = cli === null || cli === void 0 ? void 0 : cli.userData) === null || _s === void 0 ? void 0 : _s.username) && ((_t = cli.userData) === null || _t === void 0 ? void 0 : _t.serviceName) && ((_u = cli.userData) === null || _u === void 0 ? void 0 : _u.idName)) {
                     if (databaseEncrypted) {
                         console.log("Database is encrypted");
                     }
                     else {
+                        verbose("Geting id fields for \"" + cli.userData.username + "/" + cli.userData.serviceName + "/" + cli.userData.idName + "\"...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                         showIdFields(JSON_PATH, cli.userData);
                     }
                 }
                 else {
+                    console.log("No mainAction detected or not enought argumentss provided. Use --help to view commands and their mandatory arguments");
                     // detect what command is used
                     // showUsage(commandName);
                 }
                 if (!databaseEncrypted && encryptionEnabled && encryptionKey) {
+                    verbose("Encrypting database before exit...", cli === null || cli === void 0 ? void 0 : cli.verbose, cli === null || cli === void 0 ? void 0 : cli.coloredOutput);
                     encryptDatabase(JSON_PATH, encryptionKey); // encryption key comes from ask the user the key inside encryptDecrypt function (returned by promise)
                 }
                 return [2 /*return*/];
