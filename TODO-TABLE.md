@@ -9,7 +9,7 @@
 | Add expectedTest to users field (to detect bad decryption and avoid db update) | ✅ |
 | Fix all @ts-ignore | ❌ |
 | Add perUserKey | ❌ |
-| Test program works in Linux (only Termux tested at the moment) | ❌ |
+| Test program works in Linux (only Termux tested at the moment) | ✅ |
 | Add option to change /bin path (to allow usage in unprivileged enviroments) | ❌ |
 | Add logs for errors | ❌ |
 | Create Icon | ❌ |
