@@ -11,7 +11,7 @@
 + Add option to change /bin path (to allow usage in unprivileged enviroments) ❌
 + Add logs for errors ❌
 + Create Icon ❌
-+ Update repo ❌ 
++ Update repo info ❌ 
 + Add contribution instructions ❌
 + Add interactive mode (no arguments provided for mainActions) ❌
 + Add verbose argument (-v) ✅
@@ -19,7 +19,7 @@
 + Add version argument (--version) ❌
 + Add update argument (--update) ❌
 + Add usage output when any arguments provided ❌
-+ Show, edit, remove ID fileds (change field by key?) ❌
++ Show, edit, remove ID fields (change field by key?) ❌
 + Add colored output (--color) setColor (config.coloredOutput = true) ✅
 + Add Windows filesystem support ❌
 + Add reset Database option ❌

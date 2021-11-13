@@ -1211,7 +1211,7 @@ const JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
   try { // catch permissions error
     createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
   } catch(err) { // unable to create folder
-    
+    console.log("Unable to create program folder: " + err); 
   }
   createDatabase(JSON_PATH); // create json file (database)
   const cli = parseArguments(); // parse arguments from cli
