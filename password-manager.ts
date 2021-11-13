@@ -123,8 +123,12 @@ const run = (args: string): string => {
 
 
 const createProgramFolder = (dir: string) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  } catch(err) {
+    console.log("CreateProgramFolder " + err); 
   }
 }
 
