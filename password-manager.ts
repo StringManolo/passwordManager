@@ -1202,7 +1202,7 @@ const foundTermux = (): true | false => {
 
 const PATH = foundTermux() ? "/data/data/com.termux/files/usr/bin" : "/bin";
 const PROGRAM_FOLDER_PATH = `${PATH}/.password-manager`;
-const JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
+let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
 
 
 
@@ -1213,7 +1213,12 @@ const JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
   } catch(err) { // unable to create folder
     console.log("Unable to create program folder: " + err); 
   }
-  createDatabase(JSON_PATH); // create json file (database)
+
+  try {
+    createDatabase(JSON_PATH); // create json file (database)
+  } catch(err) {
+    console.log("Unable to create database into " + JSON_PATH + "\n" + err);
+  }
   const cli = parseArguments(); // parse arguments from cli
   
   /* decrypt/encrypt database if key is provided */
