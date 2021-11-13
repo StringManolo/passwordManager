@@ -1236,13 +1236,14 @@ let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
     console.log("Unable to create program folder: " + err);
   }
 
-/*
+
   try {
     createDatabase(JSON_PATH); // create json file (database)
   } catch(err) {
     console.log("Unable to create database into " + JSON_PATH + "\n" + err);
   }
 
+/*
   const cli = parseArguments(); // parse arguments from cli
   
   // decrypt/encrypt database if key is provided 
