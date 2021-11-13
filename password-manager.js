@@ -81,9 +81,11 @@ var createProgramFolder = function (dir) {
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
+        return true;
     }
     catch (err) {
-        console.log("CreateProgramFolder " + err);
+        // console.log("CreateProgramFolder " + err); 
+        return false;
     }
 };
 var loadFile = function (filename) {
@@ -1031,11 +1033,17 @@ var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
 /* PROGRAM INSTRUCTIONS */
 (function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        try { // catch permissions error
-            createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
+        if (!createProgramFolder(PROGRAM_FOLDER_PATH)) { // create folder structure
+            PATH = "./";
+            PROGRAM_FOLDER_PATH = PATH + "/.password-manager";
+            JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
+            createProgramFolder(PROGRAM_FOLDER_PATH);
         }
-        catch (err) { // unable to create folder
-            console.log("Unable to create program folder: " + err);
+        try {
+            createDatabase(JSON_PATH); // create json file (database)
+        }
+        catch (err) {
+            console.log("Unable to create database into " + JSON_PATH + "\n" + err);
         }
         return [2 /*return*/];
     });

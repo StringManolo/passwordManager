@@ -129,7 +129,7 @@ const createProgramFolder = (dir: string) => {
     }
     return true;
   } catch(err) {
-    console.log("CreateProgramFolder " + err); 
+    // console.log("CreateProgramFolder " + err); 
     return false;
   }
 }
@@ -1227,13 +1227,11 @@ let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
 
 /* PROGRAM INSTRUCTIONS */
 (async () => {
-  try { // catch permissions error
-    createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
-  } catch(err) { // unable to create folder
+  if (!createProgramFolder(PROGRAM_FOLDER_PATH)) { // create folder structure
     PATH = "./";
     PROGRAM_FOLDER_PATH = `${PATH}/.password-manager`;
     JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
-    console.log("Unable to create program folder: " + err);
+    createProgramFolder(PROGRAM_FOLDER_PATH);
   }
 
 
