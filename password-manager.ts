@@ -155,10 +155,14 @@ const open = (filename: string, mode: string) => {
 
 
 const createFile = (filename: string, data: string) => {
-  if (!fs.existsSync(filename)) {
-    const fd = open(filename, "w");
-    fd.puts(data);
-    fd.close();
+  try {
+    if (!fs.existsSync(filename)) {
+      const fd = open(filename, "w");
+      fd.puts(data);
+      fd.close();
+    }
+  } catch(err) {
+    console.log("createFile " + err);
   }
 }
 
