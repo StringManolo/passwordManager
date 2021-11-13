@@ -1228,20 +1228,14 @@ let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
 /* PROGRAM INSTRUCTIONS */
 (async () => {
   if (!createProgramFolder(PROGRAM_FOLDER_PATH)) { // create folder structure
-    PATH = "./";
+    PATH = "./"; // if unable to use /bin, use ./ (cuerrent folder)
     PROGRAM_FOLDER_PATH = `${PATH}/.password-manager`;
     JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
     createProgramFolder(PROGRAM_FOLDER_PATH);
   }
 
+  createDatabase(JSON_PATH); // create json file (database)
 
-  try {
-    createDatabase(JSON_PATH); // create json file (database)
-  } catch(err) {
-    console.log("Unable to create database into " + JSON_PATH + "\n" + err);
-  }
-
-/*
   const cli = parseArguments(); // parse arguments from cli
   
   // decrypt/encrypt database if key is provided 
