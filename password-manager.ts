@@ -245,19 +245,23 @@ const exit = (output: string) => {
 
 /* PROGRAM FUNCTIONS */
 const createDatabase = (dbPath: string) => {
-  if (!fs.existsSync(dbPath)) {
-    const db: Database = {
-      users: [], 
-      masterKey: "",
-      masterTestKey: "jdjdusjdjddj",
-      expectedTest: "key is fine",
-      iv: "Not Encrypted",
-      config: {
-        useMasterKey: false,
-        usePerUserKey: false
-      }
+  try { 
+    if (!fs.existsSync(dbPath)) {
+      const db: Database = {
+        users: [], 
+        masterKey: "",
+        masterTestKey: "jdjdusjdjddj",
+        expectedTest: "key is fine",
+        iv: "Not Encrypted",
+        config: {
+          useMasterKey: false,
+          usePerUserKey: false
+        }
+      } 
+      createFile(dbPath, JSON.stringify(db, null, 2));
     }
-    createFile(dbPath, JSON.stringify(db, null, 2));
+  } catch(err) {
+    console.log("CreateDatabase " + err);
   }
 }
 
