@@ -1157,4 +1157,5 @@ var JSON_PATH = PROGRAM_FOLDER_PATH + "/pm.json";
                 return [2 /*return*/];
         }
     });
-}); })();
+}); })()
+    .catch(function (err) { return console.log("Unhandled " + err); });
