@@ -145,12 +145,16 @@ const loadFile = (filename: string): string | null => {
 
 
 const open = (filename: string, mode: string) => {
-  const fd: FileDescriptor = {} as any;
-  fd.internalFd = fs.openSync(filename, mode);
-  fd.read = (buffer, position, len) => fs.readSync(fd.internalFd, buffer, position, len, null);
-  fd.puts = (str) => fs.writeSync(fd.internalFd, str);
-  fd.close = () => fs.closeSync(fd.internalFd);
-  return fd;
+  try {
+    const fd: FileDescriptor = {} as any;
+    fd.internalFd = fs.openSync(filename, mode);
+    fd.read = (buffer, position, len) => fs.readSync(fd.internalFd, buffer, position, len, null);
+    fd.puts = (str) => fs.writeSync(fd.internalFd, str);
+    fd.close = () => fs.closeSync(fd.internalFd);
+    return fd;
+  } catch(err) {
+    console.log("open " + err);
+  }
 }
 
 
