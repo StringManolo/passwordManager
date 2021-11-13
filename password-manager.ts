@@ -127,8 +127,10 @@ const createProgramFolder = (dir: string) => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
+    return true;
   } catch(err) {
     console.log("CreateProgramFolder " + err); 
+    return false;
   }
 }
 
@@ -1217,8 +1219,8 @@ const foundTermux = (): true | false => {
   return false;
 }
 
-const PATH = foundTermux() ? "/data/data/com.termux/files/usr/bin" : "/bin";
-const PROGRAM_FOLDER_PATH = `${PATH}/.password-manager`;
+let PATH = foundTermux() ? "/data/data/com.termux/files/usr/bin" : "/bin";
+let PROGRAM_FOLDER_PATH = `${PATH}/.password-manager`;
 let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
 
 
@@ -1228,7 +1230,10 @@ let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
   try { // catch permissions error
     createProgramFolder(PROGRAM_FOLDER_PATH); // create folder structure
   } catch(err) { // unable to create folder
-    console.log("Unable to create program folder: " + err); 
+    PATH = "./";
+    PROGRAM_FOLDER_PATH = `${PATH}/.password-manager`;
+    JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
+    console.log("Unable to create program folder: " + err);
   }
 
 /*
