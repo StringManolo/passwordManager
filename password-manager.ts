@@ -145,15 +145,16 @@ const loadFile = (filename: string): string | null => {
 
 
 const open = (filename: string, mode: string) => {
+  const fd: FileDescriptor = {} as any;
   try {
-    const fd: FileDescriptor = {} as any;
-    fd.internalFd = fs.openSync(filename, mode);
+    fd.internalFd = fs.openSync(filename, mode)
     fd.read = (buffer, position, len) => fs.readSync(fd.internalFd, buffer, position, len, null);
     fd.puts = (str) => fs.writeSync(fd.internalFd, str);
     fd.close = () => fs.closeSync(fd.internalFd);
     return fd;
   } catch(err) {
     console.log("open " + err);
+    return fd;
   }
 }
 
@@ -1230,14 +1231,16 @@ let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
     console.log("Unable to create program folder: " + err); 
   }
 
+/*
   try {
     createDatabase(JSON_PATH); // create json file (database)
   } catch(err) {
     console.log("Unable to create database into " + JSON_PATH + "\n" + err);
   }
+
   const cli = parseArguments(); // parse arguments from cli
   
-  /* decrypt/encrypt database if key is provided */
+  // decrypt/encrypt database if key is provided 
   verbose("Database decryption/encryption started", cli?.verbose, cli?.coloredOutput);
   const [databaseEncrypted, encryptionEnabled, encryptionKey] = await decryptEncryptAtStart(cli);
 
@@ -1325,5 +1328,6 @@ let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
     verbose("Encrypting database before exit...", cli?.verbose, cli?.coloredOutput);
     encryptDatabase(JSON_PATH, encryptionKey); // encryption key comes from ask the user the key inside encryptDecrypt function (returned by promise)
   }
+*/
 })();
 
