@@ -1326,6 +1326,5 @@ let JSON_PATH = `${PROGRAM_FOLDER_PATH}/pm.json`;
     verbose("Encrypting database before exit...", cli?.verbose, cli?.coloredOutput);
     encryptDatabase(JSON_PATH, encryptionKey); // encryption key comes from ask the user the key inside encryptDecrypt function (returned by promise)
   }
-*/
 })();
 
