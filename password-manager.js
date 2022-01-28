@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 "use strict";
 // Show Users || Create Users || Delete Users
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
